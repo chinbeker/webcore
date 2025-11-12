@@ -1,31 +1,23 @@
-import ServicesManager from "/System/Services/ServicesManager.js";
-import Configuration from "/System/Configuration/Configuration.js";
-
 export default class Component {
-    builder = null;
+    name = null;
+    componentClass = null;
     template = null;
     styles = null;
-    configuration = null;
-    services = null;
+    props = [];
 
-    constructor(){
-        this.configuration = new Configuration();
-        this.services = new ServicesManager();
+    constructor(builder, componentClass){
+        this.name = builder.name;
+        this.template = builder.template;
+        this.styles = builder.styles;
+        this.props = builder.props;
+        this.componentClass = componentClass;
     }
 
-
-    template(componentTemplate = '<div></div>'){
-        this.template = componentTemplate;
-        return this;
+    createInstance(){
+        return new this.componentClass();
     }
 
-    styles(componentStyles = null){
-        this.styles = componentStyles;
-        return this;
-    }
-
-
-    build(){
-        return new this.builder();
+    getComponentClass(){
+        return this.componentClass;
     }
 }

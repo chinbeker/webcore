@@ -9,14 +9,14 @@ export default class ServiceManager {
     // 创建服务实例（支持依赖注入）
     #createInstance(service) {
         // 如果有依赖项，先解析依赖
-        const dependencies = service.dependencies.map(depName => this.Resolve(depName));
+        const dependencies = service.dependencies.map(depName => this.resolve(depName));
 
         // 创建实例（支持构造函数依赖注入）
         return new service.implementation(...dependencies);
     }
 
     // 解析服务
-    Resolve(name) {
+    resolve(name) {
         if (!this.has(name)){
             throw new Error(`Service '${name}' not registered`);
         }
@@ -52,7 +52,7 @@ export default class ServiceManager {
      * @param {boolean} options.singleton - 是否单例（默认false）
      * @param {Array} options.dependencies - 依赖项列表
      */
-    Register(name, implementation, options = {}) {
+    register(name, implementation, options = {}) {
         const config = {
             singleton: false,
             dependencies: [],
@@ -68,7 +68,7 @@ export default class ServiceManager {
     }
 
     // 服务销毁功能
-    Destroy() {
+    destroy() {
         this.#singletons.forEach(instance => {
             if (typeof instance.destroy === 'function') {
                 instance.destroy();
