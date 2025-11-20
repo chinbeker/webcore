@@ -22,11 +22,13 @@ export default defineConfig({
         unused: true,
         dead_code: true,
         pure_funcs: ['console.log', 'console.info'],
+        keep_classnames: true,
         // passes: 2,
       },
 
       mangle: {
         toplevel: true,
+        keep_classnames: true,
       },
 
       format: {

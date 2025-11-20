@@ -1,29 +1,17 @@
-import Application from "/System/Application/Application.js";
-
-const builder = Application.createBuilder();
-
-// 添加系统服务
-builder.addLoggingService();
-builder.addReactiveService();
-builder.addHttpService();
-builder.addStateService();
-builder.addStorageService();
-builder.addCacheService();
-builder.addEventService();
-builder.addComponentService();
-builder.addRouterService();
-builder.addAuthenticationService();
-builder.addAuthorizationService();
-builder.addUtilityService();
-
-// 构建应用程序
-const app = builder.build();
-
-
+import app from "../Webcore/App.js";
+import Welcome from "./components/Welcome.js";
+// import Dialog from "./components/Dialog.js";
 
 // 组件注册
-import Welcome from "./components/Welcome.js";
 app.component.register(Welcome);
+// app.component.register(Dialog);
+
+
+
+// 初始化
+app.initial.default = ()=>{console.log('   6.1 默认初始化逻辑')};
+app.initial.open = ()=>{console.log('   6.3 自定义初始化逻辑')};
+app.initial.loaded= ()=>{console.log('   6.3 DOM元素加载后的初始化逻辑')};
 
 
 

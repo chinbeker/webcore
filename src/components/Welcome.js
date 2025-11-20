@@ -1,8 +1,8 @@
-import ComponentBuilder from "/System/Component/ComponentBuilder.js";
+import app from "/Webcore/App.js";
 
-const component = new ComponentBuilder();
+const component = app.component.createBuilder();
 
-component.name('my-welcome')
+component.name('welcome')
     .template(
         `<div>
             <h1><span>Welcome</span></h1>
@@ -14,12 +14,21 @@ component.name('my-welcome')
             text-align: center;
             color: red;
         }`
-    ).attributes(['content']);
+    ).attributes(['content'])
+    .inject('reactive','event');
 
 component.methods({
     create(){
-        const span = this.root.querySelector('span');
-        span.onclick = ()=>{span.textContent = 'Hello World'}
+        const reactive = this.service('reactive');
+        const event = this.service('event');
+
+        this.state.content = reactive.element(this.selector('span'));
+        const content = this.state.content;
+
+        const eventbuilder = event.createBuilder(content.element);
+        eventbuilder.click((event)=>{event.target.textContent = 'Hello World'});
+        event.register(eventbuilder);
+        // event.on(content.element, 'click', );
     },
 
     mount(target){
@@ -29,7 +38,7 @@ component.methods({
 
 component.onAttributeChanged(
     (name, old, value)=>{
-        console.log(`属性 ${name} 变化: ${old} -> ${value}`);
+        console.log(`组件属性监听：组件 'my-welcome' 的 ${name} 属性值发生改变: ${old} -> ${value}`);
     }
 );
 
