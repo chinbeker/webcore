@@ -73,7 +73,7 @@ export default class EventService {
         }
     }
 
-    createBuilder(element){return new EventBuilder(element);}
+    select(element){return new EventBuilder(this, element);}
     register(builder){
         try {
             if (builder instanceof EventBuilder){
@@ -188,7 +188,6 @@ export default class EventService {
             }
         };
     }
-
 
     destroy() {
         this.#handlers = new WeakMap();

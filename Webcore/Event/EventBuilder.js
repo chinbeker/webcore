@@ -1,11 +1,13 @@
 export default class EventBuilder {
+    service = null;
     element = null;
     handlers = Object.create(null);
     options = Object.create(null);
     empty = Object.create(null);
 
-    constructor(element){
+    constructor(service, element){
         if (!(element instanceof HTMLElement)){throw new Error('Event target must be an HTMLElement')}
+        this.service = service;
         this.element = element;
     }
 
@@ -35,6 +37,12 @@ export default class EventBuilder {
                 Reflect.deleteProperty(this.options, event);
             }
         }
+        return this;
+    }
+
+    bind(){
+        if (!this.service) {throw new Error('EventService instance is missing');}
+        this.service.register(this);
         return this;
     }
 

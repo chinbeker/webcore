@@ -1,5 +1,3 @@
-import App from "/Webcore/App.js";
-
 export default class InitialService {
     static instance = null;
     default = null;
