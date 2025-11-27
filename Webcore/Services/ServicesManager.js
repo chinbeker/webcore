@@ -7,6 +7,7 @@ export default class ServiceManager {
         if (ServiceManager.#instance){
             return ServiceManager.#instance;
         }
+        Object.freeze(this);
         ServiceManager.#instance = this;
     }
 
@@ -32,7 +33,6 @@ export default class ServiceManager {
     has(name) {return this.#services.has(name);}
     serviceNames() {return Array.from(this.#services.keys());}
 
-
     register(name, service, options = {}) {
         if (typeof name === 'string' && typeof options === 'object'){
             const config = {singleton: false, depends: [], ...options};
@@ -49,9 +49,9 @@ export default class ServiceManager {
         return this.register(name, service, { singleton: false, depends: deps });
     }
 
-    dispose() {
+    destroy() {
         this.#singletons.forEach(instance => {
-            if (typeof instance.dispose === 'function') {instance.dispose();}
+            if (typeof instance.destroy === 'function') {instance.destroy();}
         });
         this.#services.clear();
         this.#singletons.clear();

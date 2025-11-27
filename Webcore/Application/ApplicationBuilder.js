@@ -25,12 +25,25 @@ export default class ApplicationBuilder {
         return this;
     }
 
+    addSingleton(name, service, deps = []){
+        this.#serviceManager.addSingleton(name, service, deps);
+        this.#services.push(name);
+        return this;
+    }
+
+    addTransient(name, service, deps = []) {
+        this.#serviceManager.addTransient(name, service, deps);
+        this.#services.push(name);
+        return this;
+    }
+
     build(){
         console.log('3. 各项服务启动');
         const application = new Application(this.#configuration, this.#serviceManager, this.#pluginManager);
         for (const name of this.#services){
             application[name] = (this.#serviceManager.get(name));
         }
+        Object.freeze(application);
         return application;
     }
 }

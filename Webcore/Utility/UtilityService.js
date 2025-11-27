@@ -46,7 +46,7 @@ export default class UtilityService {
         if (target === undefined) {return null;}
         if (typeof func !== 'function') {return null;}
         if (func.length == 1) {return ()=>{func(target)};}
-        if (func.length > 1) {return (...value)=>{func(target, ...value)};}
+        if (func.length > 1) {return (...args)=>{func(target, ...args)};}
         return null;
     };
 

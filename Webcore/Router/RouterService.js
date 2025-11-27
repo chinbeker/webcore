@@ -13,13 +13,13 @@ export default class RouterService {
         handlers.assign = (ev)=>{ev.preventDefault();location.assign(ev.currentTarget.dataset.href);};
         handlers.replace = (ev)=>{ev.preventDefault();location.replace(ev.currentTarget.dataset.href);};
         this.#handlers = handlers;
-        RouterService.#instance = this;
         if (document.documentElement.classList.contains('webcore')){
             top.addEventListener('DOMContentLoaded',()=>{
                 this.init();this.anchor(document.body);
             },{once:true})
         };
-
+        Object.freeze(this);
+        RouterService.#instance = this;
     }
 
     init(){
@@ -40,6 +40,8 @@ export default class RouterService {
     }
 
     anchor(element){
+        if (!(element instanceof HTMLElement)) {return false;}
+        if (element.childElementCount == 0){element = element.parentElement}
         element.querySelectorAll('a[data-href]').forEach(el=>{
             const target = el.hasAttribute('data-target') ? el.dataset.target.trim() : false;
             const iframe = el.hasAttribute('data-iframe') ? el.dataset.iframe.trim() : false;

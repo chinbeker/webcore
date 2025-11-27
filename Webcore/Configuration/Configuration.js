@@ -2,7 +2,7 @@ export default class Configuration {
     #config = new Map();
 
     constructor(){
-
+        Object.freeze(this);
     }
 
     set(key, value) {this.#config.set(key, value);return this;}
@@ -10,5 +10,5 @@ export default class Configuration {
     get(key) {return this.#config.get(key);}
     delete(key){if (this.#config.has(key)){this.#config.delete(key);}return this; }
     clear(){this.#config.clear();return this;}
-    getSection(section) {return this;}
+    // getSection(section) {return this;}
 }

@@ -7,6 +7,7 @@ export default class ReactiveService {
         if (ReactiveService.#instance){
             return ReactiveService.#instance;
         }
+        Object.freeze(this);
         ReactiveService.#instance = this;
     }
 

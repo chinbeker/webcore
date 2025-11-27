@@ -25,10 +25,10 @@ component.methods({
         this.state.content = reactive.element(this.selector('span'));
         const content = this.state.content;
 
-        const eventbuilder = event.createBuilder(content.element);
-        eventbuilder.click((event)=>{event.target.textContent = 'Hello World'});
-        event.register(eventbuilder);
-        // event.on(content.element, 'click', );
+        event.select(content.element)
+        .click((event)=>{
+            event.target.textContent = 'Hello World'}
+        ).bind();
     },
 
     mount(target){

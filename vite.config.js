@@ -21,7 +21,7 @@ export default defineConfig({
         drop_debugger: true,
         unused: true,
         dead_code: true,
-        pure_funcs: ['console.log', 'console.info'],
+        pure_funcs: ['console.log'],
         keep_classnames: true,
         // passes: 2,
       },

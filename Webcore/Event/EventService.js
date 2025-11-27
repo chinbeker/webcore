@@ -8,6 +8,7 @@ export default class EventService {
         if (EventService.#instance){
             return EventService.#instance;
         }
+        Object.freeze(this);
         EventService.#instance = this;
     }
 
@@ -74,6 +75,7 @@ export default class EventService {
     }
 
     select(element){return new EventBuilder(this, element);}
+
     register(builder){
         try {
             if (builder instanceof EventBuilder){

@@ -11,6 +11,7 @@ export default class ReactiveElement {
             this.#element.textContent = content;
             this.#value = content;
         }
+        Object.freeze(this);
     }
 
     get element(){return this.#element;}

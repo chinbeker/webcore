@@ -9,7 +9,6 @@ export default class InitialService {
         if (InitialService.instance){
             return InitialService.instance;
         }
-        InitialService.instance = this;
         self.addEventListener('DOMContentLoaded', ()=>{
             try {
                 if (typeof this.loaded === 'function'){this.loaded();}
@@ -19,6 +18,8 @@ export default class InitialService {
                 return false;
             }
         },{once: true});
+        Object.seal(this);
+        InitialService.instance = this;
     }
 
     execute(){
@@ -29,7 +30,7 @@ export default class InitialService {
                 if (typeof this.load === 'function'){this.open()}
                 this.executed = true;
                 this.default = null;
-                this.load = null;
+                this.loaded = null;
             } catch (error) {
                 console.error('Initialization task execution failed: ', error)
                 return false;

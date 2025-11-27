@@ -1,21 +1,16 @@
 import ComponentBuilder from "./ComponentBuilder.js";
-import CompoentEvent from "./CompoentEvent.js";
 
 export default class ComponentService {
     static #instance = null;
     #components = new Map();
-    #events = null;
 
     constructor(){
         if (ComponentService.#instance) {
             return ComponentService.#instance;
         }
-        this.#events = new CompoentEvent();
+        Object.freeze(this);
         ComponentService.#instance = this;
     }
-
-    event(component){return this.#events.get(component);}
-    on(component, handlers){return this.#events.on(component, handlers)}
 
     createBuilder(){return new ComponentBuilder();}
 
@@ -24,7 +19,7 @@ export default class ComponentService {
             console.error('Url must be of string type.');
             return null;
         }
-        const comp = new URL(url, location.href);
+        const comp = new URL(url, location.origin);
         try {
             const request = await import(comp.href);
             const service = request.default;
@@ -102,7 +97,6 @@ export default class ComponentService {
     clear() {
         const count = this.#components.size;
         this.#components.clear();
-        this.#events.clear();
         console.log(`Cleared ${count} components from registry.`);
         return this;
     }
