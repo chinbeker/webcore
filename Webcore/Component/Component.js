@@ -1,23 +1,19 @@
 export default class Component {
     name = null;
-    componentClass = null;
-    template = null;
-    styles = null;
-    props = [];
+    component = null;
+    props = null;
 
-    constructor(builder, componentClass){
-        this.name = builder.name;
-        this.template = builder.template;
-        this.styles = builder.styles;
-        this.props = builder.props;
-        this.componentClass = componentClass;
+    constructor(name, component){
+        this.name = name;
+        this.props = component.observedAttributes || null;
+        this.component = component;
     }
 
     createInstance(){
-        return new this.componentClass();
+        return new this.component();
     }
 
     getComponentClass(){
-        return this.componentClass;
+        return this.component;
     }
 }

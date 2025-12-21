@@ -1,8 +1,6 @@
 import app from "/Webcore/App.js";
 
-const Component = app.component.createBuilder();
-
-export default class Welcome extends Component {
+export default class Welcome extends app.component.builder {
     static tagName = 'welcome';
     static get observedAttributes() {return ['content'];}
 

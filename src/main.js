@@ -1,8 +1,10 @@
 import app from "../Webcore/App.js";
 import Welcome from "./views/Welcome.js";
+// import Dialog from "./components/Dialog.js";
 
 // 组件注册
 app.component.register(Welcome);
+// app.component.register(Dialog);
 
 
 // 初始化

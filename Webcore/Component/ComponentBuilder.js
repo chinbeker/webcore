@@ -1,13 +1,10 @@
-// import Component from "./Component.js";
 import App from "../App.js";
-
 
 class ComponentTemplate {
     #fragment = null;
     #html = '<div><slot></slot></div>';
 
     set html(value){
-        console.log('设置模板');
         if (value && typeof value === 'string'){this.#html = value;}
     }
     get html(){return this.#html;}
@@ -43,8 +40,6 @@ class ComponentStyles {
 export default class ComponentBuilder extends HTMLElement {
     #name = 'core-element';
     #mode = 'open';
-    #template = new ComponentTemplate();
-    #styles = new ComponentStyles();
     #inject = [];
     #services = Object.create(null);
     #state = Object.create(null);
@@ -69,6 +64,7 @@ export default class ComponentBuilder extends HTMLElement {
     get root(){return this.#root;}
     get shadow(){return this.#shadow;}
     get services(){return this.#services;}
+    get element(){return this.#element;}
     get state(){return this.#state;}
     get props(){return Object.getPrototypeOf(this).constructor.observedAttributes;}
     get tagName(){return Object.getPrototypeOf(this).constructor.tagName;}
@@ -132,8 +128,6 @@ export default class ComponentBuilder extends HTMLElement {
     // 公共方法
     selector(selector){return this.#shadow.querySelector(selector)}
     service(name) {return Object.hasOwn(this.#services, name) ? this.#services[name] : null;}
-    getComponentClass(){return this.#component();}
-    createInstance(){return new this.#component();}
 
 
     // 构造方法

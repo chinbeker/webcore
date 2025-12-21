@@ -1,3 +1,4 @@
+import Component from "./Component.js";
 import ComponentBuilder from "./ComponentBuilder.js";
 
 export default class ComponentService {
@@ -12,7 +13,7 @@ export default class ComponentService {
         ComponentService.#instance = this;
     }
 
-    createBuilder(){return ComponentBuilder;}
+    get builder(){return ComponentBuilder;}
 
     async load(url){
         if (typeof url !== 'string'){
@@ -22,9 +23,9 @@ export default class ComponentService {
         const comp = new URL(url, location.origin);
         try {
             const request = await import(comp.href);
-            const service = request.default;
-            this.register(service);
-            return new service.componentClass();
+            const component = request.default;
+            this.register(component);
+            return new component();
         } catch (error) {
             console.error('Component loading failed:',error.message);
             return null;
@@ -44,8 +45,7 @@ export default class ComponentService {
             console.error('Component not registered, please register first');
             return null;
         }
-        const Component = this.#components.get(name);
-        return new Component();
+        return this.#components.get(name).createInstance();
     }
     getClass(name){
         name = ComponentBuilder.check(name);
@@ -54,7 +54,7 @@ export default class ComponentService {
             console.error('Component not registered, please register first');
             return null;
         }
-        return this.#components.get(name);
+        return this.#components.get(name).getComponentClass();
     }
 
     register(component, tag = null){
@@ -63,7 +63,8 @@ export default class ComponentService {
         if (this.has(name)) {console.error(`Component "${name}" is already registered, skipping.`);return this;}
         try {
             customElements.define(name, component);
-            this.#components.set(name, component);
+            const meta = new Component(name, component);
+            this.#components.set(name, meta);
             console.log(`Component "${name}" registered successfully.`);
             return this;
         } catch (error) {
