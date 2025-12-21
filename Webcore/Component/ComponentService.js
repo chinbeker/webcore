@@ -12,7 +12,7 @@ export default class ComponentService {
         ComponentService.#instance = this;
     }
 
-    createBuilder(){return new ComponentBuilder();}
+    createBuilder(){return ComponentBuilder;}
 
     async load(url){
         if (typeof url !== 'string'){
@@ -32,37 +32,37 @@ export default class ComponentService {
     }
 
     has(name){
-        if (typeof name !== 'string'){return false;}
-        if (!name.includes('-')){name = `core-${name}`;}
+        name = ComponentBuilder.check(name);
+        if (name === null) {return false;}
         return this.#components.has(name);
     }
 
     get(name){
-        if (typeof name !== 'string'){return null;}
-        if (!name.includes('-')){name = `core-${name}`;}
+        name = ComponentBuilder.check(name);
+        if (name === null) {return null;}
         if (!this.has(name)){
             console.error('Component not registered, please register first');
             return null;
         }
-        return this.#components.get(name).createInstance();
+        const Component = this.#components.get(name);
+        return new Component();
     }
     getClass(name){
-        if (typeof name !== 'string'){return null;}
-        if (!name.includes('-')){name = `core-${name}`;}
+        name = ComponentBuilder.check(name);
+        if (name === null) {return null;}
         if (!this.has(name)){
             console.error('Component not registered, please register first');
             return null;
         }
-        return this.#components.get(name).getComponentClass();
+        return this.#components.get(name);
     }
 
     register(component, tag = null){
-        if (!tag && !component.name){console.error('Missing component tag name');return this;}
-        const name = tag || component.name;
-        if (!Object.hasOwn(component, 'componentClass')){console.error(`"${name}" component is invalid.`);return this;}
+        if (!tag && !component.tagName){console.error('Missing component tag name');return this;}
+        let name = tag || ComponentBuilder.check(component.tagName);
         if (this.has(name)) {console.error(`Component "${name}" is already registered, skipping.`);return this;}
         try {
-            customElements.define(name, component.componentClass);
+            customElements.define(name, component);
             this.#components.set(name, component);
             console.log(`Component "${name}" registered successfully.`);
             return this;
