@@ -87,7 +87,7 @@ export default class HttpClient {
 
     getURL(payload=null){
         try {
-            const url = this.baseURL ? new URL(this.url, this.baseURL) : new URL(this.url, location.origin);
+            const url = this.baseURL ? new URL(this.url, this.baseURL) : new URL(this.url, Object.hasOwn(self,'app') && self.app.configuration.has('base') ? self.app.configuration.get('base') : location.origin);
             payload = payload || this.payload;
             if (HttpClient.isKeyValuePair(payload)){
                 for (const key of Object.keys(payload)){url.searchParams.set(key, payload[key])}

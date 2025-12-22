@@ -42,6 +42,15 @@ export default class Application {
         return Object.prototype.toString.call(target).replace(/^\[object (\S+)\]$/, '$1').toLowerCase();
     }
 
+    async loader(url=''){
+        if (typeof url !== 'string'){throw new Error('URL parameters must be of string type.')}
+        if (!url){throw new Error('URL parameter cannot be empty.')}
+        try {
+            const res = await fetch(url);
+            return await res.text();
+        } catch (error) {throw error;}
+    }
+
     createElement(tag = 'div', text = '', attr = null){
         tag = (typeof tag === 'string' && tag) ? tag : 'div';
         const ele = document.createElement(tag );
@@ -54,6 +63,8 @@ export default class Application {
         if (text){ele.textContent = text;}
         return ele;
     };
+
+
 
 
     // 获取所有已注册的服务名称

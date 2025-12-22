@@ -11,6 +11,8 @@ export default class ApplicationBuilder {
 
     constructor(){
         this.#configuration = new Configuration();
+        this.#configuration.set('base', location.origin);
+        this.#configuration.set('environment', window.isSecureContext && location.protocol === 'http:' ? 'development': 'production');
         this.#serviceManager = new ServiceManager();
     }
 

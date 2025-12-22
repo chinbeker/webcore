@@ -16,7 +16,9 @@ class ComponentTemplate {
         if (this.#fragment === null){this.#create()}
         return this.#fragment.cloneNode(true);
     }
+    has(){return (typeof this.#html === 'string' && this.#html.length>3)}
     #create(){this.#fragment = document.createRange().createContextualFragment(this.#html)}
+    static compress(html){return html.replace(/\n\s*/g, '').replace(/>\s+</g, '><').trim()}
 }
 
 class ComponentStyles {
@@ -34,7 +36,17 @@ class ComponentStyles {
         return this.#styleSheet;
     }
     has(){return this.#style !== null}
+    static compress(style){
+        return style.replace(/\n\s*/g, '')
+        .replace(/\s*{\s*/g, '{')
+        .replace(/\s*}\s*/g, '}')
+        .replace(/\s*:\s*/g, ':')
+        .replace(/\s*;\s*/g, ';')
+        .replace(/;\s*}/g, '}')
+        .trim();
+    }
 }
+
 
 
 export default class ComponentBuilder extends HTMLElement {
@@ -78,7 +90,7 @@ export default class ComponentBuilder extends HTMLElement {
             if (!Object.hasOwn(this.#component, 'template')){
                 this.#component.template = new ComponentTemplate();
                 if (!html){html = '<div><slot></slot></div>'}
-                this.#component.template.html = html.replace(/\n\s*/g, '').replace(/>\s+</g, '><').trim();
+                this.#component.template.html = ComponentTemplate.compress(html);
             }
         }
         return this;
@@ -92,13 +104,7 @@ export default class ComponentBuilder extends HTMLElement {
                 }
                 if (!Object.hasOwn(this.#component, 'styles')){
                     this.#component.styles = new ComponentStyles();
-                    this.#component.styles.style = styles.replace(/\n\s*/g, '')
-                    .replace(/\s*{\s*/g, '{')
-                    .replace(/\s*}\s*/g, '}')
-                    .replace(/\s*:\s*/g, ':')
-                    .replace(/\s*;\s*/g, ';')
-                    .replace(/;\s*}/g, '}')
-                    .trim();
+                    this.#component.styles.style = ComponentStyles.compress(styles);
                 }
             }
         }
@@ -135,8 +141,11 @@ export default class ComponentBuilder extends HTMLElement {
     render(func){if (typeof func !== 'function'){throw new Error('"render" method must be implemented by subclass')}return this;}
     build(){
         const shadow = this.attachShadow({ mode: this.#mode });
-        if (this.#component.styles.has()){shadow.adoptedStyleSheets = this.#component.styles.styleSheet;}
-        if (this.#component.template.html) {this.#root = this.#component.template.fragmentClone}
+        if (Object.hasOwn(this.#component, 'styles') && this.#component.styles.has()){
+            shadow.adoptedStyleSheets = this.#component.styles.styleSheet;
+        }
+        if (!Object.hasOwn(this.#component, 'template')){throw new Error('Component template is invalid.');}
+        if (this.#component.template.has()) {this.#root = this.#component.template.fragmentClone}
         shadow.appendChild(this.#root);
         this.#shadow = shadow;
         this.#root = shadow.firstElementChild;

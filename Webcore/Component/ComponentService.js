@@ -13,14 +13,14 @@ export default class ComponentService {
         ComponentService.#instance = this;
     }
 
-    get builder(){return ComponentBuilder;}
+    builder(){return ComponentBuilder;}
 
     async load(url){
         if (typeof url !== 'string'){
             console.error('Url must be of string type.');
             return null;
         }
-        const comp = new URL(url, location.origin);
+        const comp = new URL(url, Object.hasOwn(self,'app') && self.app.configuration.has('base') ? self.app.configuration.get('base') : location.origin);
         try {
             const request = await import(comp.href);
             const component = request.default;

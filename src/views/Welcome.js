@@ -1,6 +1,8 @@
 import app from "/Webcore/App.js";
 
-export default class Welcome extends app.component.builder {
+const loadStyles = await app.loader('/src/styles/welcome.css');
+
+export default class Welcome extends app.component.builder() {
     static tagName = 'welcome';
     static get observedAttributes() {return ['content'];}
 

@@ -1,14 +1,24 @@
 export default class Configuration {
-    #config = new Map();
+    #config = Object.create(null);
 
     constructor(){
         Object.freeze(this);
     }
 
-    set(key, value) {this.#config.set(key, value);return this;}
-    has(key){return this.#config.has(key);}
-    get(key) {return this.#config.get(key);}
-    delete(key){if (this.#config.has(key)){this.#config.delete(key);}return this; }
-    clear(){this.#config.clear();return this;}
+    set(key, value) {this.#config[key] = value;return this;}
+    has(key){return Object.hasOwn(this.#config, key);}
+    get(key) {return this.#config[key];}
+    delete(key){
+        if (this.has(key)){
+            delete this.#config[key];
+        }
+        return this;
+    }
+    clear(){
+        for (const key of Object.keys(this.#config)){
+            delete this.#config[key];
+        }
+        return this;
+    }
     // getSection(section) {return this;}
 }
