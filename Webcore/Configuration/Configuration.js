@@ -1,24 +1,13 @@
-export default class Configuration {
-    #config = Object.create(null);
+import DataBase from "../Base/DataBase.js";
 
-    constructor(){
-        Object.freeze(this);
-    }
-
-    set(key, value) {this.#config[key] = value;return this;}
-    has(key){return Object.hasOwn(this.#config, key);}
-    get(key) {return this.#config[key];}
-    delete(key){
-        if (this.has(key)){
-            delete this.#config[key];
+export default class Configuration extends DataBase {
+    constructor(config=null){
+        if (Object.isObject(config)){
+            for (const key of Object.keys(config)){
+                if (Object.hasPrototype(config[key])){Object.setPrototypeOf(config[key], null);}
+            }
         }
-        return this;
+        super(config);
     }
-    clear(){
-        for (const key of Object.keys(this.#config)){
-            delete this.#config[key];
-        }
-        return this;
-    }
-    // getSection(section) {return this;}
+    create(config=null){return new Configuration(config);}
 }

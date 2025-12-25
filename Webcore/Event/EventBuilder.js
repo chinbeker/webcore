@@ -6,14 +6,14 @@ export default class EventBuilder {
     empty = Object.create(null);
 
     constructor(service, element){
-        if (!(element instanceof HTMLElement)){throw new Error('Event target must be an HTMLElement')}
+        if (!(element instanceof HTMLElement)){throw new TypeError('Event target must be an HTMLElement')}
         this.service = service;
         this.element = element;
     }
 
     on(event, handler, options = null){
-        if (typeof event !== 'string'){throw new Error('Event name must be a string')}
-        if (typeof handler !== 'function'){throw new Error('Event handler must be a function')}
+        if (typeof event !== 'string'){throw new TypeError('Event name must be a string')}
+        if (typeof handler !== 'function'){throw new TypeErrorv('Event handler must be a function')}
         this.handlers[event] = handler;
         this.options[event] = options ? options : this.empty;
         return this;
@@ -41,7 +41,7 @@ export default class EventBuilder {
     }
 
     bind(){
-        if (!this.service) {throw new Error('EventService instance is missing');}
+        if (!this.service) {throw new TypeError('EventService instance is missing');}
         this.service.register(this);
         return this;
     }

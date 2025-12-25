@@ -58,8 +58,8 @@ export default class ComponentService {
     }
 
     register(component, tag = null){
-        if (!tag && !component.tagName){console.error('Missing component tag name');return this;}
-        let name = tag || ComponentBuilder.check(component.tagName);
+        if (!tag && !component.tag){console.error('Missing component tag name');return this;}
+        let name = tag || ComponentBuilder.check(component.tag);
         if (this.has(name)) {console.error(`Component "${name}" is already registered, skipping.`);return this;}
         try {
             customElements.define(name, component);

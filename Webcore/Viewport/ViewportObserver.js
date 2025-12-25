@@ -10,7 +10,7 @@ export default class ViewportObserver {
 
     removed(target, func, options={childList: true, subtree: true}){
         if (typeof target === 'string'){target = document.querySelector(target);}
-        if (!(target instanceof HTMLElement)) {throw new Error('Invalid target element or selector.');}
+        if (!(target instanceof HTMLElement)) {throw new TypeError('Invalid target element or selector.');}
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
                 if (mutation.removedNodes.length > 0){
@@ -31,8 +31,8 @@ export default class ViewportObserver {
 
     added(target, func, options={childList: true, subtree: true}){
         if (typeof target === 'string'){target = document.querySelector(target);}
-        if (!(target instanceof HTMLElement)) {throw new Error('Invalid target element or selector.');}
-        if (typeof func !== 'function'){throw new Error('Callback function is required.')}
+        if (!(target instanceof HTMLElement)) {throw new TypeError('Invalid target element or selector.');}
+        if (typeof func !== 'function'){throw new TypeError('Callback function is required.')}
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
                 if (mutation.addedNodes.length > 0){
@@ -53,8 +53,8 @@ export default class ViewportObserver {
 
     attributes(target, func, attributes=[]) {
         if (typeof target === 'string') {target = document.querySelector(target);}
-        if (!(target instanceof HTMLElement)) {throw new Error('Invalid target element or selector.');}
-        if (typeof func !== 'function') {throw new Error('Callback function is required.');}
+        if (!(target instanceof HTMLElement)) {throw new TypeError('Invalid target element or selector.');}
+        if (typeof func !== 'function') {throw new TypeError('Callback function is required.');}
         const attributeList = Array.isArray(attributes) ? attributes : [attributes];
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
@@ -83,9 +83,9 @@ export default class ViewportObserver {
 
     visible(target, func, options={}, unobserve=true){
         if (!(target instanceof HTMLElement) && typeof target !== 'string' ) {
-            throw new Error('Target must be an HTMLElement or selector string');
+            throw new TypeError('Target must be an HTMLElement or selector string');
         }
-        if (typeof func !== 'function'){throw new Error('Callback function is required')}
+        if (typeof func !== 'function'){throw new TypeError('Callback function is required')}
         const observer = new IntersectionObserver((entries)=>{
             for (const entry of entries){
                 if (entry.isIntersecting && entry.target.nodeType === Node.ELEMENT_NODE){

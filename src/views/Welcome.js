@@ -1,9 +1,7 @@
 import app from "/Webcore/App.js";
 
-const loadStyles = await app.loader('/src/styles/welcome.css');
-
 export default class Welcome extends app.component.builder() {
-    static tagName = 'welcome';
+    static tag = 'welcome';
     static get observedAttributes() {return ['content'];}
 
     constructor(){
@@ -23,8 +21,7 @@ export default class Welcome extends app.component.builder() {
                 text-align: center;
                 color: red;
             }`
-        )
-        .inject('reactive', 'event');
+        ).inject(['reactive', 'event']);
     }
 
     hook(){

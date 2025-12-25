@@ -5,17 +5,18 @@ import ViewportService from "./Viewport/ViewportService.js";
 import RouterService from "./Router/RouterService.js";
 import ComponentService from "./Component/ComponentService.js";
 import ViewService from "./View/ViewService.js";
-import ReactiveService from "./Reactive/ReactiveService.js";
 import EventService from "./Event/EventService.js";
+import ReactiveService from "./Reactive/ReactiveService.js";
 import HttpService from "./Http/HttpService.js";
+import TextService from "./Text/TextService.js";
+import GlobalService from "./Global/GlobalService.js";
+import StateService from "./State/StateService.js";
 // import AuthorizationServce from "./Authorization/AuthorizationServce.js";
 // import AuthenticationService from "./Authentication/AuthenticationService.js";
 // import StorageService from "./Storage/StorageService.js";
-// import StateService from "./State/StateService.js";
 // import CacheService from "./Cache/CacheService.js";
 // import LoggingService from "./Logging/LoggingService.js";
 // import UtilityService from "./Utility/UtilityService.js";
-import TextService from "./Text/TextService.js";
 // import SecurityService from "./Security/SecurityService.js";
 // import PluginManager from "./Plugin/PluginManager.js";
 
@@ -31,17 +32,18 @@ const singletons = [
     {name: 'router', service: RouterService},
     {name: 'component', service: ComponentService},
     {name: 'view', service: ViewService},
-    {name: 'reactive', service: ReactiveService},
     {name: 'event', service: EventService},
+    {name: 'reactive', service: ReactiveService},
     {name: 'http', service: HttpService},
+    {name: 'text', service: TextService},
+    {name: 'global', service: GlobalService},
+    {name: 'state', service: StateService},
     // {name: 'authentication', service: AuthenticationService},
     // {name: 'authorization', service: AuthorizationServce},
-    // {name: 'state', service: StateService},
     // {name: 'storage', service: StorageService},
     // {name: 'cache', service: CacheService},
     // {name: 'logging', service: LoggingService},
     // {name: 'utility', service: UtilityService},
-    {name: 'text', service: TextService},
     // {name: 'security', service: SecurityService},
     // {name: 'plugin', service: PluginManager},
 ];

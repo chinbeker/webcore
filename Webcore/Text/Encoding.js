@@ -30,23 +30,23 @@ export default class Encoding {
     }
 
     stringToBase64(str) {
-        if (str == undefined || str == null) {throw new Error('Parameter cannot be null or empty.');}
-        if (typeof str !== 'string') {throw new Error('The parameter must be of string type.');}
+        if (str == undefined || str == null) {throw new TypeError('Parameter cannot be null or empty.');}
+        if (typeof str !== 'string') {throw new TypeError('The parameter must be of string type.');}
         try {
             const bytes = this.#encoder.encode(str);
             return this.arrayBufferToBase64(bytes);
-        } catch (error) {
-            throw new Error('Base64 encoding error.');
+        } catch {
+            throw new TypeError('Base64 encoding error.');
         }
     }
 
     base64ToString(base64){
-        if (base64 == undefined || base64 == null) {throw new Error('Parameter cannot be null or empty.');}
-        if (typeof base64 !== 'string') {throw new Error('The parameter must be of string type.');}
+        if (base64 == undefined || base64 == null) {throw new TypeError('Parameter cannot be null or empty.');}
+        if (typeof base64 !== 'string') {throw new TypeError('The parameter must be of string type.');}
         try {
             return this.#decoder.decode(this.base64ToArrayBuffer(base64));
         } catch {
-            throw new Error('Base64 decoding error.');
+            throw new TypeError('Base64 decoding error.');
         }
     }
 

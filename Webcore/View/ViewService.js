@@ -1,13 +1,13 @@
-export default class nameService {
+export default class ViewService {
     static #instance = null;
     #components = new Map();
 
     constructor(){
-        if (nameService.#instance) {
-            return nameService.#instance;
+        if (ViewService.#instance) {
+            return ViewService.#instance;
         }
         Object.freeze(this);
-        nameService.#instance = this;
+        ViewService.#instance = this;
     }
 
      // 事件回调注册
@@ -37,7 +37,7 @@ export default class nameService {
 
     // 获取指定组件或事件的回调
     get(name, event = null){
-        if (typeof name !== 'string'){throw new Error('The name name must be of string type.')}
+        if (typeof name !== 'string'){throw new TypeError('The name name must be of string type.')}
         name = name.trim();
         if (name && this.has(name)){
             const handlers = this.#components.get(name);

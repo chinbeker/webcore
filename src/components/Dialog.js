@@ -1,7 +1,7 @@
 import app from "/Webcore/App.js";
 
 export default class Dialog extends app.component.builder() {
-  static tagName = 'dialog';
+  static tag = 'dialog';
   constructor(){
     super();
     this.hook();

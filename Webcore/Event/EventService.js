@@ -51,9 +51,9 @@ export default class EventService {
 
     // 添加事件监听
     on(target, event, handler, options) {
-        if (!(target instanceof HTMLElement)){throw new Error('Event target must be an HTMLElement')}
-        if (typeof event !== 'string'){throw new Error('Event name must be a string')}
-        if (typeof handler !== 'function'){throw new Error('Event handler must be a function')}
+        if (!(target instanceof HTMLElement)){throw new TypeError('Event target must be an HTMLElement')}
+        if (typeof event !== 'string'){throw new TypeError('Event name must be a string')}
+        if (typeof handler !== 'function'){throw new TypeError('Event handler must be a function')}
         let handlers = null;
         try {
             if (this.#handlers.has(target)){

@@ -15,14 +15,14 @@ export default class HttpClient {
 
     constructor(config=null){
         // 检查 url
-        if (!HttpClient.isKeyValuePair(config)){throw new Error('Invalid configuration.')}
-        if (!Object.hasOwn(config,'url')){throw new Error('URL is required.')}
+        if (!HttpClient.isKeyValuePair(config)){throw new TypeError('Invalid configuration.')}
+        if (!Object.hasOwn(config,'url')){throw new TypeError('URL is required.')}
 
         // 检查参数类型
         for (const [key, prop] of Object.entries(HttpClient.config)){
             if (Object.hasOwn(config, key)){
-                if (typeof config[key] !== prop.type){throw new Error(`The ${key} must be of ${prop.type} type.`)}
-                if (Object.hasOwn(prop, 'valid') && !prop.valid.includes(config[key])){throw new Error(`The ${key} parameter is invalid.`)}
+                if (typeof config[key] !== prop.type){throw new TypeError(`The ${key} must be of ${prop.type} type.`)}
+                if (Object.hasOwn(prop, 'valid') && !prop.valid.includes(config[key])){throw new TypeError(`The ${key} parameter is invalid.`)}
                 this[key] = config[key];
             }
         }
@@ -30,7 +30,7 @@ export default class HttpClient {
         // 检查 headers、payload
         for (const key of ['headers', 'payload']){
             if (Object.hasOwn(config, key)) {
-                if (!HttpClient.isKeyValuePair(config[key])){throw new Error(`The ${key} must be of object type.`)}
+                if (!HttpClient.isKeyValuePair(config[key])){throw new TypeError(`The ${key} must be of object type.`)}
                 for (const prop of Object.keys(config[key])){this[key][prop] = config[key][prop];}
             }
         }
@@ -38,8 +38,8 @@ export default class HttpClient {
         // 检查 expand
         for (const [key, prop] of Object.entries(HttpClient.expand)){
             if (Object.hasOwn(config, key)){
-                if (typeof config[key] !== prop.type) {throw new Error(`The ${key} must be of ${prop.type} type.`);}
-                if (!prop.valid.includes(config[key])) {throw new Error(`The ${key} parameter is invalid.`);}
+                if (typeof config[key] !== prop.type) {throw new TypeError(`The ${key} must be of ${prop.type} type.`);}
+                if (!prop.valid.includes(config[key])) {throw new TypeError(`The ${key} parameter is invalid.`);}
                 this.expand[key] = config[key];
             }
         }
@@ -111,9 +111,9 @@ export default class HttpClient {
         const options = Object.create(null);
 
         // 检查 method
-        if (typeof method !== 'string'){throw new Error('The method parameter is invalid.')}
+        if (typeof method !== 'string'){throw new TypeError('The method parameter is invalid.')}
         options.method = method.trim().toUpperCase();
-        if (!HttpClient.method.includes(options.method)){throw new Error('The method parameter is invalid.')}
+        if (!HttpClient.method.includes(options.method)){throw new TypeError('The method parameter is invalid.')}
         if (Object.keys(this.headers).length > 0){options.headers = new Headers(this.headers);}
         Object.assign(options, this.expand);
 

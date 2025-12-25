@@ -20,14 +20,7 @@ export default class Application {
     getService(name) {return this.services.get(name);}
     hasService(name) {return this.services.has(name);}
 
-
-    cob(target=null){
-        const obj = Object.create(null);
-        if (this.typeOf(target) === 'object' && Object.getPrototypeOf(target) !== null){
-            Object.assign(obj, target);
-        }
-        return obj;
-    }
+    cob(target = null){return Object.cob(target);}
 
     cfn(target, func){
         if (typeof func !== 'function') {return null;}
@@ -43,8 +36,8 @@ export default class Application {
     }
 
     async loader(url=''){
-        if (typeof url !== 'string'){throw new Error('URL parameters must be of string type.')}
-        if (!url){throw new Error('URL parameter cannot be empty.')}
+        if (typeof url !== 'string'){throw new TypeError('URL parameters must be of string type.')}
+        if (!url){throw new TypeError('URL parameter cannot be empty.')}
         try {
             const res = await fetch(url);
             return await res.text();
@@ -63,6 +56,7 @@ export default class Application {
         if (text){ele.textContent = text;}
         return ele;
     };
+
 
 
 
