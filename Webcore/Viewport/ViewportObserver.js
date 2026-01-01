@@ -1,16 +1,17 @@
 export default class ViewportObserver {
     static #instance = null;
-    #observers = new Set();
 
     constructor(){
-        if (ViewportObserver.#instance){return ViewportObserver.#instance}
+        if (ViewportObserver.#instance){return ViewportObserver.#instance;}
+        Object.defineFreezeProperty(ViewportObserver, "observers", new Set());
+        Object.freeze(ViewportObserver);
         Object.freeze(this);
         ViewportObserver.#instance = this;
     }
 
     removed(target, func, options={childList: true, subtree: true}){
-        if (typeof target === 'string'){target = document.querySelector(target);}
-        if (!(target instanceof HTMLElement)) {throw new TypeError('Invalid target element or selector.');}
+        if (typeof target === "string"){target = document.querySelector(target);}
+        if (!(target instanceof HTMLElement)) {throw new TypeError("Invalid target element or selector.");}
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
                 if (mutation.removedNodes.length > 0){
@@ -22,17 +23,17 @@ export default class ViewportObserver {
             });
         });
         observer.observe(target, options);
-        this.#observers.add(observer);
+        ViewportObserver.observers.add(observer);
         return ()=>{
             observer.disconnect();
-            this.#observers.delete(observer);
+            ViewportObserver.observers.delete(observer);
         };
     }
 
     added(target, func, options={childList: true, subtree: true}){
-        if (typeof target === 'string'){target = document.querySelector(target);}
-        if (!(target instanceof HTMLElement)) {throw new TypeError('Invalid target element or selector.');}
-        if (typeof func !== 'function'){throw new TypeError('Callback function is required.')}
+        if (typeof target === "string"){target = document.querySelector(target);}
+        if (!(target instanceof HTMLElement)) {throw new TypeError("Invalid target element or selector.");}
+        if (typeof func !== "function"){throw new TypeError("Callback function is required.")}
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
                 if (mutation.addedNodes.length > 0){
@@ -44,21 +45,21 @@ export default class ViewportObserver {
             });
         });
         observer.observe(target, options);
-        this.#observers.add(observer);
+        ViewportObserver.observers.add(observer);
         return ()=>{
             observer.disconnect();
-            this.#observers.delete(observer);
+            ViewportObserver.observers.delete(observer);
         };
     }
 
     attributes(target, func, attributes=[]) {
-        if (typeof target === 'string') {target = document.querySelector(target);}
-        if (!(target instanceof HTMLElement)) {throw new TypeError('Invalid target element or selector.');}
-        if (typeof func !== 'function') {throw new TypeError('Callback function is required.');}
+        if (typeof target === "string") {target = document.querySelector(target);}
+        if (!(target instanceof HTMLElement)) {throw new TypeError("Invalid target element or selector.");}
+        if (typeof func !== "function") {throw new TypeError("Callback function is required.");}
         const attributeList = Array.isArray(attributes) ? attributes : [attributes];
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {
-                if (mutation.type === 'attributes' && mutation.target.nodeType === Node.ELEMENT_NODE) {
+                if (mutation.type === "attributes" && mutation.target.nodeType === Node.ELEMENT_NODE) {
                     const attributeName = mutation.attributeName;
                     if (attributeList.length === 0 || attributeList.includes(attributeName)) {
                         func(target, attributeName, mutation.oldValue, target.getAttribute(attributeName));
@@ -73,19 +74,19 @@ export default class ViewportObserver {
             childList: false,
             characterData: false
         });
-        this.#observers.add(observer);
+        ViewportObserver.observers.add(observer);
 
         return () => {
             observer.disconnect();
-            this.#observers.delete(observer);
+            ViewportObserver.observers.delete(observer);
         };
     }
 
     visible(target, func, options={}, unobserve=true){
-        if (!(target instanceof HTMLElement) && typeof target !== 'string' ) {
-            throw new TypeError('Target must be an HTMLElement or selector string');
+        if (!(target instanceof HTMLElement) && typeof target !== "string" ) {
+            throw new TypeError("Target must be an HTMLElement or selector string");
         }
-        if (typeof func !== 'function'){throw new TypeError('Callback function is required')}
+        if (typeof func !== "function"){throw new TypeError("Callback function is required")}
         const observer = new IntersectionObserver((entries)=>{
             for (const entry of entries){
                 if (entry.isIntersecting && entry.target.nodeType === Node.ELEMENT_NODE){
@@ -96,22 +97,22 @@ export default class ViewportObserver {
         }, options);
         if (target instanceof HTMLElement){
             observer.observe(target);
-        } else if (typeof target === 'string') {
+        } else if (typeof target === "string") {
             document.querySelectorAll(target).forEach((el)=>{
                 if (el.nodeType === Node.ELEMENT_NODE) {observer.observe(el);}
             });
         }
-        this.#observers.add(observer);
+        ViewportObserver.observers.add(observer);
         return () => {
             observer.disconnect();
-            this.#observers.delete(observer);
+            ViewportObserver.observers.delete(observer);
         };
     }
 
     disconnect() {
-        for (const observer of this.#observers) {
+        for (const observer of ViewportObserver.observers) {
             observer.disconnect();
         }
-        this.#observers.clear();
+        ViewportObserver.observers.clear();
     }
 }

@@ -2,20 +2,19 @@ import GlobalData from "./GlobalData.js";
 
 export default class GlobalService {
     static #instance = null;
-    #system = new GlobalData()
-    #vars = new GlobalData()
-    #state = new GlobalData()
 
     constructor(){
-        if (GlobalService.#instance){
-            return GlobalService.#instance;
-        }
+        if (GlobalService.#instance){return GlobalService.#instance;}
+        Object.defineFreezeProperty(GlobalService,"system",new GlobalData());
+        Object.defineFreezeProperty(GlobalService,"vars",new GlobalData());
+        Object.defineFreezeProperty(GlobalService,"state",new GlobalData());
+        Object.freeze(GlobalService);
         Object.freeze(this);
         GlobalService.#instance = this;
     }
 
 
-    get vars(){return this.#vars;}
-    get system(){return this.#system;}
-    get state(){return this.#state;}
+    get vars(){return GlobalService.vars;}
+    get system(){return GlobalService.system;}
+    get state(){return GlobalService.state;}
 }

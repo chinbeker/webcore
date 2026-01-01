@@ -9,12 +9,12 @@ export default class InitialService {
         if (InitialService.instance){
             return InitialService.instance;
         }
-        self.addEventListener('DOMContentLoaded', ()=>{
+        self.addEventListener("DOMContentLoaded", ()=>{
             try {
-                if (typeof this.loaded === 'function'){this.loaded();this.loaded = null;}
+                if (typeof this.loaded === "function"){this.loaded();this.loaded = null;}
                 this.executed = true;
             } catch (error) {
-                console.error('Initialization task execution failed: ', error)
+                console.error("Initialization task execution failed: ", error)
                 return false;
             }
         }, {once: true});
@@ -23,14 +23,14 @@ export default class InitialService {
     }
 
     execute(){
-        console.log('6. 开始运行初始化程序……');
-        if (!this.executed && typeof this.default === 'function'){
+        console.log("6. 开始运行初始化程序……");
+        if (!this.executed && typeof this.default === "function"){
             try {
-                if (typeof this.default === 'function'){this.default();this.default = null;}
-                if (typeof this.open === 'function'){this.open();this.open = null;}
+                if (typeof this.default === "function"){this.default();this.default = null;}
+                if (typeof this.open === "function"){this.open();this.open = null;}
                 this.executed = true;
             } catch (error) {
-                console.error('Initialization task execution failed: ', error)
+                console.error("Initialization task execution failed: ", error)
                 return false;
             }
         }

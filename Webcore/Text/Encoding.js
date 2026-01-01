@@ -1,19 +1,17 @@
 export default class Encoding {
     static #instance = null;
-    #encoder = new TextEncoder();
-    #decoder = new TextDecoder('utf-8');
 
     constructor(){
-        if (Encoding.#instance){
-            return Encoding.#instance;
-        }
-        Object.freeze(this);
+        if (Encoding.#instance){return Encoding.#instance;}
+        Object.defineFreezeProperty(Encoding, "encoder", new TextEncoder());
+        Object.defineFreezeProperty(Encoding, "decoder", new TextDecoder("utf-8"));
+        Object.freeze(Encoding);
         Encoding.#instance = this;
     }
 
     arrayBufferToBase64(buffer) {
         const bytes = new Uint8Array(buffer);
-        let binary = '';
+        let binary = "";
         for (let i = 0; i < bytes.length; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
@@ -30,34 +28,34 @@ export default class Encoding {
     }
 
     stringToBase64(str) {
-        if (str == undefined || str == null) {throw new TypeError('Parameter cannot be null or empty.');}
-        if (typeof str !== 'string') {throw new TypeError('The parameter must be of string type.');}
+        Error.throwIfNull(str);
+        Error.throwIfEmpty(str);
         try {
-            const bytes = this.#encoder.encode(str);
+            const bytes = Encoding.encoder.encode(str);
             return this.arrayBufferToBase64(bytes);
         } catch {
-            throw new TypeError('Base64 encoding error.');
+            throw new TypeError("Base64 encoding error.");
         }
     }
 
     base64ToString(base64){
-        if (base64 == undefined || base64 == null) {throw new TypeError('Parameter cannot be null or empty.');}
-        if (typeof base64 !== 'string') {throw new TypeError('The parameter must be of string type.');}
+        Error.throwIfNull(base64);
+        Error.throwIfEmpty(base64);
         try {
-            return this.#decoder.decode(this.base64ToArrayBuffer(base64));
+            return Encoding.decoder.decode(this.base64ToArrayBuffer(base64));
         } catch {
-            throw new TypeError('Base64 decoding error.');
+            throw new TypeError("Base64 decoding error.");
         }
     }
 
     stringToUrlBase64(str) {
         const standardBase64 = this.stringToBase64(str);
-        return standardBase64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        return standardBase64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     }
 
     urlBase64ToString(urlBase64) {
-        let standardBase64 = urlBase64.replace(/-/g, '+').replace(/_/g, '/');
-        while (standardBase64.length % 4) {standardBase64 += '=';}
+        let standardBase64 = urlBase64.replace(/-/g, "+").replace(/_/g, "/");
+        while (standardBase64.length % 4) {standardBase64 += "=";}
         return this.base64ToString(standardBase64);
     }
 }

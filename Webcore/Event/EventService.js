@@ -1,32 +1,132 @@
 import EventBuilder from "./EventBuilder.js";
+import EventProvider from "./EventProvider.js";
 
 export default class EventService {
-    static #instance = null;
-    #handlers = new WeakMap();
-
     constructor(){
-        if (EventService.#instance){
-            return EventService.#instance;
-        }
+        if (EventService.instance){return EventService.instance;}
+        Object.defineFreezeProperty(EventService, "provider", new EventProvider());
+        Object.defineSealProperty(EventService, "handlers", new WeakMap());
+
+        Object.defineFreezeProperty(EventService, "invoke", function invoke(event) {
+            const type = event.type;
+            let handler = null;
+            if (this.instance.has(event.currentTarget, type)){
+                handler = EventService.handlers.get(event.currentTarget)[type];
+            } else if (this.instance.has(event.target, type)) {
+                handler = EventService.handlers.get(event.target)[type];
+            }
+            if (typeof handler === "function") {
+                try {
+                    return handler(event);
+                } catch (error) {
+                    console.error("Event emit error:", error);
+                    return false;
+                }
+            }
+            return false;
+        });
+
+        Object.defineFreezeProperty(EventService, "handler", (event)=>{return EventService.invoke(event)});
+        Object.defineFreezeProperty(EventBuilder, "EventService", this);
+        Object.freeze(EventBuilder);
         Object.freeze(this);
-        EventService.#instance = this;
+        Object.defineFreezeProperty(EventService, "instance", this);
     }
 
-    #handler = (event)=>{return this.#invoke(event)}
+    get provider(){return EventService.provider;}
+
+    expose(name, handlers){return EventService.provider.expose(name, handlers);}
+    use(name, event){return EventService.provider.use(name, event);}
+    delete(name){return EventService.provider.delete(name);}
+
+    has(element, event = null){
+        if (!(element instanceof HTMLElement)){return false;}
+        if (!EventService.handlers.has(element)){return false;}
+        if (!String.isNullOrWhiteSpace(event)) {
+            return Object.hasOwn(EventService.handlers.get(element), event.trim());
+        }
+        return true;
+    }
+
+    select(element){
+        if (Object.isElement(element)){
+            return new EventBuilder(element);
+        } else if (Object.isClassInstance(element, "ReactiveElement")){
+            return new EventBuilder(element.element);
+        } else {
+            throw new ReferenceError("Invalid element.");
+        }
+    }
+
+    register(builder){
+        try {
+            if (builder instanceof EventBuilder){
+                EventService.handlers.set(builder.element, builder.handlers);
+                for (const type of Object.keys(builder.handlers)){
+                    builder.element.addEventListener(type, EventService.handler, builder.options[type]);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to add event listener:", error);
+            return false;
+        }
+    }
+
+
+    emit(target, event){
+        if (this.has(target, event)){
+            const handler = EventService.handlers.get(target)[event.trim()];
+            try {
+                return handler(target);
+            } catch (error) {
+                console.error("Event emit error:", error);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // 移除事件监听
+    remove(target, event = null) {
+        if (this.has(target)){
+            let handlers = EventService.handlers.get(target);
+            if (typeof event === "string"){
+                if (!Object.hasOwn(handlers, event)) {return this;}
+                handlers[event] = null;
+                delete handlers[event];
+                target.removeEventListener(event, EventService.handler);
+                if (Object.keys(handlers).length === 0) {EventService.handlers.delete(target);}
+            } else {
+                for (const type of Object.keys(handlers)) {
+                    handlers[type] = null;
+                    target.removeEventListener(type, EventService.handler);
+                }
+                handlers = null;
+                EventService.handlers.delete(target);
+            }
+        }
+        return this;
+    }
+
+    destroy() {
+        EventService.handlers = new WeakMap();
+        EventService.provider.clear();
+        return true;
+    }
 
     target(event, tag, depth=10){
         if (!(event instanceof Event)) {return null;}
         if (!event.target || !event.currentTarget) {return null;}
         let target = event.target;
         const current = event.currentTarget;
-        if (typeof tag !== 'string'){return target;}
+        if (typeof tag !== "string"){return target;}
         tag = tag.trim().toUpperCase();
         if (!tag) {return target;}
         if (target === current) {
             if (current.nodeName === tag){return target;} else {return null;}
         }
 
-        if (typeof tag === 'string'){
+        if (typeof tag === "string"){
             let step = 0;
             while (step < depth && target != current){
                 if (target.nodeName === tag) {return target;}
@@ -37,125 +137,6 @@ export default class EventService {
         }
         return null;
     };
-
-
-    has(target, event = null){
-        if (!(target instanceof HTMLElement)){return false;}
-        const hasTarget = this.#handlers.has(target);
-        if (!hasTarget) {return false;}
-        if (typeof event === 'string') {
-            return Object.hasOwn(this.#handlers.get(target), event);
-        }
-        return true;
-    }
-
-    // 添加事件监听
-    on(target, event, handler, options) {
-        if (!(target instanceof HTMLElement)){throw new TypeError('Event target must be an HTMLElement')}
-        if (typeof event !== 'string'){throw new TypeError('Event name must be a string')}
-        if (typeof handler !== 'function'){throw new TypeError('Event handler must be a function')}
-        let handlers = null;
-        try {
-            if (this.#handlers.has(target)){
-                handlers = this.#handlers.get(target);
-                if (!Object.hasOwn(handlers, event)){
-                    target.addEventListener(event, this.#handler, options)
-                }
-            } else {
-                handlers = Object.create(null);
-                this.#handlers.set(target, handlers);
-                target.addEventListener(event, this.#handler, options)
-            }
-            handlers[event] = handler;
-            return this;
-        } catch (error) {
-            console.error('Failed to add event listener:', error)
-            return this;
-        }
-    }
-
-    select(element){return new EventBuilder(this, element);}
-
-    register(builder){
-        try {
-            if (builder instanceof EventBuilder){
-                this.#handlers.set(builder.element, builder.handlers);
-                for (const type of Object.keys(builder.handlers)){
-                    builder.element.addEventListener(type, this.#handler, builder.options[type]);
-                }
-            }
-        } catch (error) {
-            console.error('Failed to add event listener:', error);
-            return false;
-        }
-    }
-
-    once(target, event, handler, options = {}) {
-        try {
-            options.once = true;
-            target.addEventListener(event, handler, options);
-            return true;
-        } catch (error) {
-            console.error('Failed to add event listener:', error);
-            return false;
-        }
-    }
-
-    // 触发事件
-    #invoke(event) {
-        const type = event.type;
-        let handler = null;
-        if (this.has(event.currentTarget, type)){
-            handler = this.#handlers.get(event.currentTarget)[type];
-        } else if (this.has(event.target, type)) {
-            handler = this.#handlers.get(event.target)[type];
-        }
-        if (typeof handler === 'function') {
-            try {
-                return handler(event);
-            } catch (error) {
-                console.error('Event emit error:', error);
-                return false;
-            }
-        }
-        return false;
-    }
-
-    emit(target, event){
-        if (this.has(target, event)){
-            const handler = this.#handlers.get(target)[event];
-            try {
-                return handler();
-            } catch (error) {
-                console.error('Event emit error:', error);
-                return false;
-            }
-        }
-        return false;
-    }
-
-    // 移除事件监听
-    remove(target, event = null) {
-        if (this.has(target)){
-            let handlers = this.#handlers.get(target);
-            if (typeof event === 'string'){
-                if (!Object.hasOwn(handlers, event)) {return this;}
-                handlers[event] = null;
-                Reflect.deleteProperty(handlers, event);
-                target.removeEventListener(event, this.#handler);
-                if (Object.keys(handlers).length === 0) {this.#handlers.delete(target);}
-            } else {
-                for (const type of Object.keys(handlers)) {
-                    handlers[type] = null;
-                    target.removeEventListener(type, this.#handler);
-                }
-                handlers = null;
-                this.#handlers.delete(target);
-            }
-        }
-        return this;
-    }
-
 
     debounce(func, delay = 300, immediate = false) {
         let timer = null;
@@ -189,9 +170,5 @@ export default class EventService {
                 }, remainingTime);
             }
         };
-    }
-
-    destroy() {
-        this.#handlers = new WeakMap();
     }
 }

@@ -1,15 +1,19 @@
 export default class ReactiveElement {
     #element = null;
-    #value = '';
-    constructor(element, content){
+    #value = "";
+    #onchange = null;
+
+    constructor(element, content=null){
         if (element instanceof HTMLElement){
             this.#element = element;
         } else {
-            this.#element = document.createElement('div');
+            this.#element = document.createElement("div");
         }
-        if (content && typeof content === 'string'){
+        if (typeof content === "string"){
             this.#element.textContent = content;
             this.#value = content;
+        } else {
+            this.#value = this.#element.textContent;
         }
         Object.freeze(this);
     }
@@ -17,15 +21,19 @@ export default class ReactiveElement {
     get element(){return this.#element;}
     get value(){return this.#value;}
     set value(value){
-        if (typeof this.onchange === 'function'){
-            if (this.#value !== value){this.onchange(value, this.#value, this.#element);}
+        if (typeof this.#onchange === "function" && this.#value !== value){
+            this.#onchange(value, this.#value, this.#element);
         }
         this.#value = value;
         this.#element.textContent = value;
     }
+    set onchange(value){
+        Error.throwIfNotFunction(value, "Change callback")
+        this.#onchange=value;
+    }
 
     mount(target){
-        if (typeof target === 'string'){
+        if (typeof target === "string"){
             const node = document.querySelector(target);
             if (node){node.append(this.#element)}
         } else if (target instanceof HTMLElement){

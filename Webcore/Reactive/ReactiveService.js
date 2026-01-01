@@ -7,20 +7,22 @@ export default class ReactiveService {
         if (ReactiveService.#instance){
             return ReactiveService.#instance;
         }
+        Object.freeze(ReactiveElement);
+        Object.freeze(ReactiveStore);
         Object.freeze(this);
         ReactiveService.#instance = this;
     }
 
-    element(target = 'div', content){
+    element(target = "div", content){
         if (target instanceof HTMLElement){
             return new ReactiveElement(target, content);
         } else {
             try {
-                if (typeof target !== 'string'){target = 'div';}
+                if (typeof target !== "string"){target = "div";}
                 const element = document.createElement(target);
                 return new ReactiveElement(element, content);
             } catch  {
-                return new ReactiveElement(document.createElement('div'), content);
+                return new ReactiveElement(document.createElement("div"), content);
             }
         }
     }

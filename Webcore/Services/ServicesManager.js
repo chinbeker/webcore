@@ -1,60 +1,61 @@
 export default class ServiceManager {
     static #instance = null;
-    #services = new Map();
-    #singletons = new Map();
 
     constructor(){
-        if (ServiceManager.#instance){
-            return ServiceManager.#instance;
-        }
+        if (ServiceManager.#instance){return ServiceManager.#instance;}
+        Object.defineFreezeProperty(ServiceManager, "services", new Map());
+        Object.defineFreezeProperty(ServiceManager, "singletons", new Map());
+        Object.freeze(ServiceManager);
         Object.freeze(this);
         ServiceManager.#instance = this;
     }
 
 
-    #create(desc) {
-        const depends = desc.depends.map(dep => this.get(dep));
-        return new desc.service(...depends);
+    #create(service) {
+        const dependency = service.dependency.map(dep => this.get(dep));
+        return new service.constructor(...dependency);
     }
+
+    serviceNames() {return Array.from(ServiceManager.services.keys());}
+    has(name) {return ServiceManager.services.has(name);}
 
     get(name){
-        if (!this.has(name)){throw new Error(`Service '${name}' not registered`);}
-        const desc = this.#services.get(name);
-        if (desc.singleton) {
-            if (!this.#singletons.has(name)) {
-                this.#singletons.set(name, this.#create(desc));
+        if (!this.has(name)){throw new Error(`The "${name}" service is not registered.`);}
+        const service = ServiceManager.services.get(name);
+        if (service.singleton) {
+            if (!ServiceManager.singletons.has(name)) {
+                ServiceManager.singletons.set(name, this.#create(service));
             }
-            return this.#singletons.get(name);
+            return ServiceManager.singletons.get(name);
         } else {
-            return this.#create(desc);
+            return this.#create(service);
         }
     }
 
-    has(name) {return this.#services.has(name);}
-    serviceNames() {return Array.from(this.#services.keys());}
-
     register(name, service, options = {}) {
-        if (typeof name === 'string' && typeof options === 'object'){
-            const config = {singleton: false, depends: [], ...options};
-            this.#services.set(name, {service, ...config});
-        }
+        name = String.toNotEmptyString(name, "Service name");
+        if (this.has(name)){throw new Error(`The "${name}" service has already been registered.`);}
+        if (typeof service !== "function"){throw new Error(`The "${name}" service to be registered is invalid.`)}
+        Error.throwIfNotObject(options, "Service options");
+        const config = {singleton: false, dependency: [], ...options};
+        ServiceManager.services.set(name, {constructor: service, ...config});
         return this;
     }
 
     addSingleton(name, service, deps = []) {
-        return this.register(name, service, { singleton: true, depends: deps });
+        return this.register(name, service, {singleton: true, dependency: deps});
     }
 
     addTransient(name, service, deps = []) {
-        return this.register(name, service, { singleton: false, depends: deps });
+        return this.register(name, service, {singleton: false, dependency: deps});
     }
 
     destroy() {
-        this.#singletons.forEach(instance => {
-            if (typeof instance.destroy === 'function') {instance.destroy();}
+        ServiceManager.singletons.forEach(instance => {
+            if (typeof instance.destroy === "function") {instance.destroy();}
         });
-        this.#services.clear();
-        this.#singletons.clear();
+        ServiceManager.services.clear();
+        ServiceManager.singletons.clear();
     }
 
 }

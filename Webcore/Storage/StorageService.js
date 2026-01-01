@@ -1,237 +1,94 @@
+// import Database from "./Database.js";
+
 export default class StorageService {
     static #instance = null;
-    #db = null;
-    #dbName = 'AppStorage';
-    #version = 1;
-    #storeName = 'System';
+
+    // #size = 1024 * 1024 * 5;
+    // #origin = location.origin;
+
+    // #database = new Database();
+    // static #database = null;
 
     constructor(){
-        if (StorageService.#instance){
-            return StorageService.#instance;
-        }
-        this.#initializeDB();
+        if (StorageService.#instance){return StorageService.#instance;}
+        Object.defineFreezeProperty(Map.prototype, "toObject",
+            function toObject(){
+                const obj = Object.pure();
+                for (const [key, value] of this.entries()){
+                    if (typeof key === "string" || (typeof key === "number" && Number.isFinite(key))){
+                        obj[key] = value;
+                    }
+                }
+                return obj;
+            }
+        );
+        Object.defineFreezeProperty(Map.prototype, "toJSON",function toJSON(){return this.toObject();});
+        Object.defineFreezeProperty(Set.prototype, "toArray",function toArray(){return Array.from(this);});
+        Object.defineFreezeProperty(Set.prototype, "toJSON",function toJSON(){return this.toArray();});
+        Object.defineFreezeProperty(StorageService, "validateKey",
+            function validateKey(key){
+                if (typeof key !== "string" && typeof key !== "number"){
+                    throw new TypeError("Key must be string or number.");
+                }
+                if (typeof key === "number"){key = key.toString();}
+                if (String.isNullOrWhiteSpace(key)){
+                    throw new TypeError("Key cannot be empty.")
+                }
+                return key.trim();
+            }
+        );
         StorageService.#instance = this;
     }
 
-    async #initializeDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(this.#dbName, this.#version);
+    // get database(){return StorageService.#database;}
+    get length(){return localStorage.length;}
 
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => {
-                this.#db = request.result;
-                resolve();
-            };
-
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains(this.#storeName)) {
-                    db.createObjectStore(this.#storeName);
-                }
-            };
-        });
+    has(key){
+        key = StorageService.validateKey(key);
+        return localStorage.getItem(key) !== null;
     }
-
-    #getStore(mode = 'readonly') {
-        if (!this.#db) {
-            throw new Error('Database not initialized');
+    set(key, value){
+        key = StorageService.validateKey(key);
+        if (value == null){
+            localStorage.removeItem(key);
+            return this;
         }
-        const transaction = this.#db.transaction([this.#storeName], mode);
-        return transaction.objectStore(this.#storeName);
+        localStorage.setItem(key, JSON.stringify(value));
+        return this;
     }
-
-    // 存储数据
-    async set(key, value) {
-        return new Promise((resolve, reject) => {
-            try {
-                const store = this.#getStore('readwrite');
-                const request = store.put(value, key);
-
-                request.onsuccess = () => {
-                    // 触发存储事件
-                    if (this.services) {
-                        const eventService = this.services.get('event');
-                        if (eventService) {
-                            eventService.emit('storage:set', { key, value, success: true });
-                        }
-                    }
-                    resolve(true);
-                };
-
-                request.onerror = () => reject(request.error);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    // 获取数据
-    async get(key) {
-        return new Promise((resolve, reject) => {
-            try {
-                const store = this.#getStore();
-                const request = store.get(key);
-
-                request.onsuccess = () => resolve(request.result || null);
-                request.onerror = () => reject(request.error);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    // 删除数据
-    async remove(key) {
-        return new Promise((resolve, reject) => {
-            try {
-                const store = this.#getStore('readwrite');
-                const request = store.delete(key);
-
-                request.onsuccess = () => {
-                    // 触发存储事件
-                    if (this.services) {
-                        const eventService = this.services.get('event');
-                        if (eventService) {
-                            eventService.emit('storage:remove', { key, success: true });
-                        }
-                    }
-                    resolve(true);
-                };
-
-                request.onerror = () => reject(request.error);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    // 清空所有数据
-    async clear() {
-        return new Promise((resolve, reject) => {
-            try {
-                const store = this.#getStore('readwrite');
-                const request = store.clear();
-
-                request.onsuccess = () => {
-                    // 触发存储事件
-                    if (this.services) {
-                        const eventService = this.services.get('event');
-                        if (eventService) {
-                            eventService.emit('storage:clear', { success: true });
-                        }
-                    }
-                    resolve(true);
-                };
-
-                request.onerror = () => reject(request.error);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    // 获取所有键
-    async keys() {
-        return new Promise((resolve, reject) => {
-            try {
-                const store = this.#getStore();
-                const request = store.getAllKeys();
-
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    // 检查键是否存在
-    async has(key) {
-        const value = await this.get(key);
-        return value !== null && value !== undefined;
-    }
-
-    // 获取数据数量
-    async count() {
-        return new Promise((resolve, reject) => {
-            try {
-                const store = this.#getStore();
-                const request = store.count();
-
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-    // 批量设置多个值
-    async setMultiple(items) {
-        const results = {};
-        for (const [key, value] of Object.entries(items)) {
-            results[key] = await this.set(key, value);
+    get(key, defaultValue = null){
+        key = StorageService.validateKey(key);
+        const value = localStorage.getItem(key);
+        try {
+            return value === null ? defaultValue : JSON.parse(value);
+        } catch (error) {
+            console.warn(`Failed to parse JSON for key "${key}": `, error);
+            return value;
         }
-        return results;
     }
+    keys(){return Object.keys(localStorage);}
 
-    // 批量获取多个值
-    async getMultiple(keys) {
-        const results = {};
-        for (const key of keys) {
-            results[key] = await this.get(key);
+    entries() {
+        const result = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            try {
+                result.push([key, JSON.parse(value)]);
+            } catch (error) {
+                result.push([key, value]);
+            }
         }
-        return results;
+        return result;
     }
 
-    // 批量删除多个值
-    async removeMultiple(keys) {
-        const results = {};
-        for (const key of keys) {
-            results[key] = await this.remove(key);
-        }
-        return results;
+    delete(key){
+        key = StorageService.validateKey(key);
+        localStorage.removeItem(key);
+        return this;
     }
-
-    // 导出所有数据
-    async export() {
-        const keys = await this.keys();
-        const data = {};
-        for (const key of keys) {
-            data[key] = await this.get(key);
-        }
-        return data;
-    }
-
-    // 导入数据
-    async import(data) {
-        const results = {};
-        for (const [key, value] of Object.entries(data)) {
-            results[key] = await this.set(key, value);
-        }
-        return results;
-    }
-
-    // 获取数据库信息
-    async getStats() {
-        const keys = await this.keys();
-        const count = await this.count();
-
-        return {
-            totalItems: count,
-            keys: keys,
-            dbName: this.#dbName,
-            version: this.#version
-        };
-    }
-
-    // 删除整个数据库
-    async deleteDatabase() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.deleteDatabase(this.#dbName);
-
-            request.onsuccess = () => resolve(true);
-            request.onerror = () => reject(request.error);
-        });
+    clear(){
+        localStorage.clear();
+        return this;
     }
 }

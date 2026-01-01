@@ -1,12 +1,12 @@
 export default class ReactiveStore {
     #proxy = null;
     constructor(value = null){
-        const proxy = Object.create(null);
+        const proxy = Object.pure();
         proxy.value = value;
         this.#proxy = new Proxy(proxy, {
             get : (target, prop)=>{return target.value;},
             set : (target, prop, value)=>{
-                if (typeof this.onchange === 'function'){this.onchange(value, target.value);}
+                if (typeof this.onchange === "function"){this.onchange(value, target.value);}
                 target.value = value;
                 return true;
             },

@@ -3,19 +3,19 @@ import app from "/Webcore/App.js";
 class ComponentTemplate {
     #initial = true;
     #fragment = null;
-    #html = '<div><slot></slot></div>';
+    #html = "<slot></slot>";
 
     get initial(){return this.#initial;}
     get html(){return this.#html;}
 
     set html(value){
-        if (this.#initial && typeof value === 'string' && value.length > 3){
+        if (this.#initial && !String.isNullOrWhiteSpace(value)){
             this.#html = ComponentTemplate.compress(value);
             this.#initial = false;
         }
     }
 
-    has(){return (typeof this.#html === 'string' && this.#html.length > 3)}
+    has(){return !String.isNullOrWhiteSpace(this.#html);}
 
     fragment(clone = false){
         if (this.#fragment == null){
@@ -28,7 +28,7 @@ class ComponentTemplate {
         }
     }
 
-    static compress(html){return html.replace(/\n\s*/g, '').replace(/>\s+</g, '><').trim()}
+    static compress(html){return html.replace(/\n\s*/g, "").replace(/>\s+</g, "><").trim()}
 }
 
 class ComponentStyles {
@@ -44,7 +44,7 @@ class ComponentStyles {
 
     set style(value){
         if (this.#initial){
-            if (value.endsWith('.css')){
+            if (value.endsWith(".css")){
                 this.#href = value;
                 this.#initial = false;
             } else if (value.length > 3) {
@@ -60,8 +60,8 @@ class ComponentStyles {
                 const style = await app.loader(this.#href);
                 this.#style = ComponentStyles.compress(style);
                 this.#loaded = true;
-            } catch (error) {
-                throw new TypeError('Component style loading failed. ', error);
+            } catch  {
+                throw new TypeError("Component style loading failed.");
             }
         }
         if (!this.#initial && this.#styleSheet == null){
@@ -73,12 +73,12 @@ class ComponentStyles {
     }
 
     static compress(style){
-        return style.replace(/\n\s*/g, '')
-        .replace(/\s*{\s*/g, '{')
-        .replace(/\s*}\s*/g, '}')
-        .replace(/\s*:\s*/g, ':')
-        .replace(/\s*;\s*/g, ';')
-        .replace(/;\s*}/g, '}')
+        return style.replace(/\n\s*/g, "")
+        .replace(/\s*{\s*/g, "{")
+        .replace(/\s*}\s*/g, "}")
+        .replace(/\s*:\s*/g, ":")
+        .replace(/\s*;\s*/g, ";")
+        .replace(/;\s*}/g, "}")
         .trim();
     }
 }
@@ -86,31 +86,25 @@ class ComponentStyles {
 
 
 export default class ComponentBuilder extends HTMLElement {
-    #name = 'core-element';
-    #mode = 'open';
+    #name = "core-element";
+    #mode = "open";
     #inject = [];
-    #services = Object.create(null);
-    #state = Object.create(null);
-    #element = Object.create(null);
+    #services = Object.pure();
+    #state = Object.pure();
+    #element = Object.pure();
     #root = null;
     #shadow = null;
     #config = null;
-    #component = null;
-
-    static check(name){
-        if (typeof name !== 'string'){return null;}
-        if (name && !name.includes('-')){name = `core-${name}`;}
-        return name;
-    }
+    #builder = null;
 
     constructor(config=null){
         super();
-        this.#component = Object.getPrototypeOf(this).constructor;
-        this.#name = this.#component.tag;
+        this.#builder = Object.getConstructorOf(this);
+        this.#name = this.#builder.tag;
+        this.#builder.template = new ComponentTemplate();
+        this.#builder.styles = new ComponentStyles();
         if (Object.isObject(config)){this.#config = app.configuration.create(config);}
-        if (!Object.hasOwn(this.#component, 'template')){this.#component.template = new ComponentTemplate();}
-        if (!Object.hasOwn(this.#component, 'styles')){this.#component.styles = new ComponentStyles();}
-        Object.freeze(this.#component);
+        Object.freeze(this.#builder);
         this.create();
         this.#create();
         this.#build();
@@ -123,24 +117,25 @@ export default class ComponentBuilder extends HTMLElement {
     get element(){return this.#element;}
     get config(){return this.#config;}
     get state(){return this.#state;}
-    get props(){return Object.getPrototypeOf(this).constructor.observedAttributes || null;}
-    get tag(){return Object.getPrototypeOf(this).constructor.tag;}
+    get props(){return this.#builder.observedAttributes || null;}
+    get name(){return this.#name;}
 
 
     template(html) {
-        if (typeof html !== 'string'){console.error('The component template must be of string type.');}
-        this.#component.template.html = html;
+        if (typeof html !== "string"){console.error("Component template must be of string type.");}
+        this.#builder.template.html = html;
         return this;
     }
 
     styles(styles) {
-        if (typeof styles !== 'string'){console.error('The component style must be of string type.');}
-        this.#component.styles.style = styles;
+        if (typeof styles !== "string"){console.error("Component style must be of string type.");}
+        // if ()
+        this.#builder.styles.style = styles;
         return this;
     }
 
-    mode(shadowMode = 'open') {
-        if (!['open', 'closed'].includes(shadowMode)) {
+    mode(shadowMode = "open") {
+        if (!["open", "closed"].includes(shadowMode)) {
             throw new TypeError('Shadow DOM mode must be either "open" or "closed"');
         }
         this.#mode = shadowMode;
@@ -148,45 +143,51 @@ export default class ComponentBuilder extends HTMLElement {
     }
 
     inject(service){
-        if (!Array.isArray(service)){throw new TypeError('Component service inject must be a array value')}
+        Error.throwIfNotArray(service, "Component service inject");
         this.#inject = service;
         return this;
     }
 
     // 声明周期事件
-    connectedCallback(){if (typeof this.onConnected === 'function'){return this.onConnected();}}
-    attributeChangedCallback(name, old, value){if (typeof this.onAttributeChanged === 'function'){return this.onAttributeChanged(name, old, value);}}
-    adoptedCallback(){if (typeof this.onAdopted === 'function'){return this.onAdopted();}}
-    disconnectedCallback(){if (typeof this.onDisconnected === 'function'){return this.onDisconnected();}}
+    connectedCallback(){if (typeof this.onConnected === "function"){return this.onConnected();}}
+    attributeChangedCallback(attr, old, value){if (typeof this.onAttributeChanged === "function"){return this.onAttributeChanged(attr, value, old);}}
+    adoptedCallback(){if (typeof this.onAdopted === "function"){return this.onAdopted();}}
+    disconnectedCallback(){if (typeof this.onDisconnected === "function"){return this.onDisconnected();}}
 
     // 公共方法
     selector(selector){return this.#root.querySelector(selector)}
     service(name) {return Object.hasOwn(this.#services, name) ? this.#services[name] : null;}
 
 
-    // 构造方法
-    create(func){if (typeof func !== 'function'){throw new TypeError('"create" method must be implemented by subclass')}return this;}
-    render(func){if (typeof func !== 'function'){throw new TypeError('"render" method must be implemented by subclass')}return this;}
+    // 抽象方法
+    create(func){if (typeof func !== "function"){throw new TypeError('"create" method must be implemented by subclass')}return this;}
+    render(func){if (typeof func !== "function"){throw new TypeError('"render" method must be implemented by subclass')}return this;}
 
+    // 私有方法
     #create(){
         this.#shadow = this.attachShadow({ mode: this.#mode });
-        if (this.#component.template.has()) {
-            this.#root = this.#component.template.fragment(true);
+        if (this.#builder.template.has()) {
+            this.#root = this.#builder.template.fragment(true);
         }
         if (this.#inject.length > 0){
-            this.#services = Object.create(null);
+            this.#services = Object.pure();
             for (const service of this.#inject){
-                this.#services[service] = app.services.get(service);
+                this.#services[service] = app.getService(service);
             }
         }
 
     }
-
     async #build(){
-        if (!this.#component.styles.initial){
-            const styleSheet = await this.#component.styles.getStyleSheet();
+        if (!this.#builder.styles.initial){
+            const styleSheet = await this.#builder.styles.getStyleSheet();
             this.#shadow.adoptedStyleSheets = styleSheet;
         }
         this.#shadow.appendChild(this.#root);
+    }
+
+    static check(name){
+        Error.throwIfNotString(name, "Component tag name");
+        if (!name.includes("-")){name = `core-${name}`;}
+        return name;
     }
 }

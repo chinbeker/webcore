@@ -1,21 +1,11 @@
-import StateData from "./StateData.js";
+import DataBase from "../Base/DataBase.js";
 
-export default class StateService {
+export default class StateService extends DataBase {
     static #instance = null;
-    #state = new StateData();
-
     constructor(){
-        if (StateService.#instance){
-            return StateService.#instance;
-        }
+        super()
+        if (StateService.#instance){return StateService.#instance;}
+        Object.freeze(this);
         StateService.#instance = this;
     }
-
-    has(key){return this.#state.has(key);}
-    get(key){return this.#state.get(key);}
-    add(key, value){this.#state.set(key, value);return this;}
-    set(key, value){this.#state.set(key, value);return this;}
-    delete(key){this.#state.delete(key);return this;}
-    remove(key){this.#state.delete(key);return this;}
-    clear(){return this.#state.clear();}
 }
