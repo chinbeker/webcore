@@ -3,8 +3,8 @@ export default class Encoding {
 
     constructor(){
         if (Encoding.#instance){return Encoding.#instance;}
-        Object.defineFreezeProperty(Encoding, "encoder", new TextEncoder());
-        Object.defineFreezeProperty(Encoding, "decoder", new TextDecoder("utf-8"));
+        Object.freezeProp(Encoding, "encoder", new TextEncoder());
+        Object.freezeProp(Encoding, "decoder", new TextDecoder("utf-8"));
         Object.freeze(Encoding);
         Encoding.#instance = this;
     }

@@ -20,6 +20,6 @@ app.component.register(Welcome);
 
 // 启动应用程序
 app.run();
-Object.defineFreezeProperty(self,"app",app);
+Object.freezeProp(self,"app",app);
 
 export default app;

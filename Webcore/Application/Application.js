@@ -5,8 +5,8 @@ export default class Application {
 
     constructor(configuration, services, plugin){
         if (Application.#instance) {return Application.#instance;}
-        Object.defineFreezeProperty(this, "configuration", configuration);
-        Object.defineFreezeProperty(Application, "services", services);
+        Object.freezeProp(this, "configuration", configuration);
+        Object.freezeProp(Application, "services", services);
         Object.freeze(Application);
         Application.#instance = this;
     }

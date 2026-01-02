@@ -3,8 +3,8 @@ export default class ServiceManager {
 
     constructor(){
         if (ServiceManager.#instance){return ServiceManager.#instance;}
-        Object.defineFreezeProperty(ServiceManager, "services", new Map());
-        Object.defineFreezeProperty(ServiceManager, "singletons", new Map());
+        Object.freezeProp(ServiceManager, "services", new Map());
+        Object.freezeProp(ServiceManager, "singletons", new Map());
         Object.freeze(ServiceManager);
         Object.freeze(this);
         ServiceManager.#instance = this;

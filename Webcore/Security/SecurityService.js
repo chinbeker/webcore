@@ -9,9 +9,9 @@ export default class SecurityService {
 
     constructor(){
         if (SecurityService.#instance){return SecurityService.#instance;}
-        Object.defineFreezeProperty(this, "secureMode", Boolean(crypto.subtle && window.isSecureContext));
-        Object.defineFreezeProperty(this, "generate", new Generate());
-        // if (this.generate){Object.defineFreezeProperty(this, "crypto", new Crypto());}
+        Object.freezeProp(this, "secureMode", Boolean(crypto.subtle && window.isSecureContext));
+        Object.freezeProp(this, "generate", new Generate());
+        // if (this.generate){Object.freezeProp(this, "crypto", new Crypto());}
         SecurityService.#instance = this;
     }
 }

@@ -4,10 +4,10 @@ import EventProvider from "./EventProvider.js";
 export default class EventService {
     constructor(){
         if (EventService.instance){return EventService.instance;}
-        Object.defineFreezeProperty(EventService, "provider", new EventProvider());
-        Object.defineSealProperty(EventService, "handlers", new WeakMap());
+        Object.freezeProp(EventService, "provider", new EventProvider());
+        Object.sealProp(EventService, "handlers", new WeakMap());
 
-        Object.defineFreezeProperty(EventService, "invoke", function invoke(event) {
+        Object.freezeProp(EventService, "invoke", function invoke(event) {
             const type = event.type;
             let handler = null;
             if (this.instance.has(event.currentTarget, type)){
@@ -26,11 +26,11 @@ export default class EventService {
             return false;
         });
 
-        Object.defineFreezeProperty(EventService, "handler", (event)=>{return EventService.invoke(event)});
-        Object.defineFreezeProperty(EventBuilder, "EventService", this);
+        Object.freezeProp(EventService, "handler", (event)=>{return EventService.invoke(event)});
+        Object.freezeProp(EventBuilder, "EventService", this);
         Object.freeze(EventBuilder);
         Object.freeze(this);
-        Object.defineFreezeProperty(EventService, "instance", this);
+        Object.freezeProp(EventService, "instance", this);
     }
 
     get provider(){return EventService.provider;}

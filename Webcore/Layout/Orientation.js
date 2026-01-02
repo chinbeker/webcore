@@ -3,8 +3,8 @@ class OrientationChange {
 
     constructor(){
         if (OrientationChange.#instance){return OrientationChange.#instance}
-        Object.defineFreezeProperty(OrientationChange, "tasks", []);
-        Object.defineSealProperty(OrientationChange, "running", false);
+        Object.freezeProp(OrientationChange, "tasks", []);
+        Object.sealProp(OrientationChange, "running", false);
         Object.freeze(this);
         OrientationChange.#instance = this;
     }
@@ -69,8 +69,8 @@ export default class Orientation {
 
     constructor(){
         if (Orientation.#instance){return Orientation.#instance}
-        Object.defineFreezeProperty(this, "change", new OrientationChange());
-        Object.defineFreezeProperty(Orientation, "media", top.matchMedia("(orientation: landscape)"));
+        Object.freezeProp(this, "change", new OrientationChange());
+        Object.freezeProp(Orientation, "media", top.matchMedia("(orientation: landscape)"));
         Orientation.media.onchange = ()=>{this.change.execute()};
 
         const changHandler = ()=>{

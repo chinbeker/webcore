@@ -5,9 +5,9 @@ export default class GlobalService {
 
     constructor(){
         if (GlobalService.#instance){return GlobalService.#instance;}
-        Object.defineFreezeProperty(GlobalService,"system",new GlobalData());
-        Object.defineFreezeProperty(GlobalService,"vars",new GlobalData());
-        Object.defineFreezeProperty(GlobalService,"state",new GlobalData());
+        Object.freezeProp(GlobalService,"system",new GlobalData());
+        Object.freezeProp(GlobalService,"vars",new GlobalData());
+        Object.freezeProp(GlobalService,"state",new GlobalData());
         Object.freeze(GlobalService);
         Object.freeze(this);
         GlobalService.#instance = this;

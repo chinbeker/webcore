@@ -5,7 +5,7 @@ export default class ViewportService {
 
     constructor(){
         if (ViewportService.#instance){return ViewportService.#instance}
-        Object.defineFreezeProperty(this, "observe", new ViewportObserver());
+        Object.freezeProp(this, "observe", new ViewportObserver());
         Object.freeze(this);
         ViewportService.#instance = this;
     }

@@ -11,7 +11,7 @@ export default class StorageService {
 
     constructor(){
         if (StorageService.#instance){return StorageService.#instance;}
-        Object.defineFreezeProperty(Map.prototype, "toObject",
+        Object.freezeProp(Map.prototype, "toObject",
             function toObject(){
                 const obj = Object.pure();
                 for (const [key, value] of this.entries()){
@@ -22,10 +22,10 @@ export default class StorageService {
                 return obj;
             }
         );
-        Object.defineFreezeProperty(Map.prototype, "toJSON",function toJSON(){return this.toObject();});
-        Object.defineFreezeProperty(Set.prototype, "toArray",function toArray(){return Array.from(this);});
-        Object.defineFreezeProperty(Set.prototype, "toJSON",function toJSON(){return this.toArray();});
-        Object.defineFreezeProperty(StorageService, "validateKey",
+        Object.freezeProp(Map.prototype, "toJSON",function toJSON(){return this.toObject();});
+        Object.freezeProp(Set.prototype, "toArray",function toArray(){return Array.from(this);});
+        Object.freezeProp(Set.prototype, "toJSON",function toJSON(){return this.toArray();});
+        Object.freezeProp(StorageService, "validateKey",
             function validateKey(key){
                 if (typeof key !== "string" && typeof key !== "number"){
                     throw new TypeError("Key must be string or number.");

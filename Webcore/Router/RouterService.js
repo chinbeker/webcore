@@ -4,7 +4,7 @@ export default class RouterService {
     constructor(){
         if (RouterService.#instance){return RouterService.#instance;}
         top.history.replaceState(true, null, location.origin + location.pathname);
-        Object.defineFreezeProperty(RouterService, "handlers", Object.pure());
+        Object.freezeProp(RouterService, "handlers", Object.pure());
         const handlers = RouterService.handlers;
         handlers.top = (ev)=>{ev.preventDefault();top.location.replace(ev.currentTarget.dataset.href);};
         handlers.parent = (ev)=>{ev.preventDefault();parent.location.replace(ev.currentTarget.dataset.href);};

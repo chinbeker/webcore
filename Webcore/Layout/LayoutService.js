@@ -5,8 +5,8 @@ export default class LayoutService {
 
     constructor(){
         if (LayoutService.#instance){return LayoutService.#instance}
-        Object.defineFreezeProperty(this, "orientation", new Orientation());
-        Object.defineSealProperty(LayoutService, "executed", false);
+        Object.freezeProp(this, "orientation", new Orientation());
+        Object.sealProp(LayoutService, "executed", false);
         this.start();
         LayoutService.executed = true;
         Object.freeze(LayoutService);

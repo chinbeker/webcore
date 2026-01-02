@@ -5,8 +5,8 @@ export default class HttpService {
 
     constructor(cache){
         if (HttpService.#instance){return HttpService.#instance;}
-        Object.defineFreezeProperty(HttpService,"api", new Map());
-        Object.defineFreezeProperty(HttpClient,"cache", cache);
+        Object.freezeProp(HttpService,"api", new Map());
+        Object.freezeProp(HttpClient,"cache", cache);
         HttpClient.method = ["GET", "POST", "PUT", "DELETE", "HEAD", "PATCH", "OPTIONS"];
         HttpClient.config = {
             url: {type: "string"},

@@ -10,7 +10,7 @@ export default class ComponentService {
         if (ComponentService.#instance) {
             return ComponentService.#instance;
         }
-        Object.defineFreezeProperty(this, "builder", ComponentBuilder);
+        Object.freezeProp(this, "builder", ComponentBuilder);
         Object.freeze(this);
         ComponentService.#instance = this;
     }

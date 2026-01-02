@@ -53,23 +53,23 @@ export default class ApplicationBuilder {
                 if (target === null){throw new TypeError("Target cannot be null or undefined.");}
                 if (typeof target !== "object" && typeof target !== "function") {throw new TypeError("Target must be an object or function.");}
                 if (typeof key !== "string" && typeof key !== "symbol") {throw new TypeError("Property key must be a string or symbol.");}
-                Object.defineProperty(target, key, {value: val, writable: false, enumerable: false, configurable: false, ...desc});return true;
+                Object.defineProperty(target, key, {writable: false, enumerable: false, configurable: false, ...desc, value: val});return true;
             },
             writable: false, enumerable: false, configurable: false
         });
 
         // ------------------------------------  扩展 Object --------------------------------------
         // 创建定义冻结属性的方法(不可修改，不可枚举，不可配置)
-        Object.defineProperty(Object, "defineFreezeProperty", {
-            value: function defineFreezeProperty(target, key, val){return Application.defineProperty(target, key, val)},
+        Object.defineProperty(Object, "freezeProp", {
+            value: function freezeProp(target, key, val){return Application.defineProperty(target, key, val)},
             writable: false, enumerable: false, configurable: false
         });
         // 创建定义密封属性的方法(可修改，不可枚举，不可配置)
-        Object.defineFreezeProperty(Object, "defineSealProperty",
-            function defineSealProperty(target, key, val){return Application.defineProperty(target, key, val, {writable: true});}
+        Object.freezeProp(Object, "sealProp",
+            function sealProp(target, key, val){return Application.defineProperty(target, key, val, {writable: true});}
         );
         // 检查类型
-        Object.defineFreezeProperty(Object, "typeOf",
+        Object.freezeProp(Object, "typeOf",
             function typeOf(target){
                 if (target === undefined) {return "undefined";}
                 if (target === null) {return "null";}
@@ -77,18 +77,18 @@ export default class ApplicationBuilder {
             }
         );
         // 判断是否普通简单 Object 类型
-        Object.defineFreezeProperty(Object, "isObject",
+        Object.freezeProp(Object, "isObject",
             function isObject(target){return Object.prototype.toString.call(target) === "[object Object]";}
         );
         // 判断 Object 对象是否有原型
-        Object.defineFreezeProperty(Object, "hasPrototype",
+        Object.freezeProp(Object, "hasPrototype",
             function hasPrototype(target){
                 if (target === null || typeof target !== "object"){return false;}
                 return Object.getPrototypeOf(target) !== null && typeof Object.getPrototypeOf(target) === "object";
             }
         );
         // 返回没有原型的纯净 Object 对象（一般用于存储数据）
-        Object.defineFreezeProperty(Object, "pure",
+        Object.freezeProp(Object, "pure",
             function pure(target = null, clone = true){
                 if (!Object.isObject(target)){return Object.create(null);}
                 if (!Object.hasPrototype(target)){return target;}
@@ -100,7 +100,7 @@ export default class ApplicationBuilder {
             }
         );
         // 获取实例的构造函数
-        Object.defineFreezeProperty(Object, "getConstructorOf",
+        Object.freezeProp(Object, "getConstructorOf",
             function getConstructorOf(target){
                 if (!Object.hasPrototype(target)){throw new TypeError("Object prototype is null.");}
                 const proto = Object.getPrototypeOf(target);
@@ -111,7 +111,7 @@ export default class ApplicationBuilder {
             }
         );
         // 判断对象是否是某构造函数的实例（通过name属性判断，可能不准确，因为name属性可以被修改）
-        Object.defineFreezeProperty(Object, "isClassInstance",
+        Object.freezeProp(Object, "isClassInstance",
             function isClassInstance(target, name){
                 if (typeof name !== "string"){return false;}
                 if (!Object.hasPrototype(target)){return false;}
@@ -123,13 +123,13 @@ export default class ApplicationBuilder {
             }
         );
         // 判断是否 HTML 元素
-        Object.defineFreezeProperty(Object, "isElement",
+        Object.freezeProp(Object, "isElement",
             function isElement(target){return target instanceof HTMLElement;}
         );
 
         // ------------------------------------ 扩展 Number --------------------------------------
         // 判断是否为有效数字
-        Object.defineFreezeProperty(Number, "isNumber",
+        Object.freezeProp(Number, "isNumber",
             function isNumber(number){
                 if (typeof number === "number" && Number.isFinite(number)) {return true;}
                 return false;
@@ -138,22 +138,22 @@ export default class ApplicationBuilder {
 
         // ------------------------------------ 扩展 String --------------------------------------
         // 判断是否为空字符串
-        Object.defineFreezeProperty(String, "isNullOrEmpty",
+        Object.freezeProp(String, "isNullOrEmpty",
             function isNullOrEmpty(str){
                 if (str === undefined || str === null || typeof str !== "string"){return true;}
                 return str.length === 0;
             }
         );
         // 判断是否为空白字符串
-        Object.defineFreezeProperty(String, "NON_WHITESPACE_REGEX", /\S/);                // 匹配时复用的正则对象
-        Object.defineFreezeProperty(String, "isNullOrWhiteSpace",
+        Object.freezeProp(String, "NON_WHITESPACE_REGEX", /\S/);                // 匹配时复用的正则对象
+        Object.freezeProp(String, "isNullOrWhiteSpace",
             function isNullOrWhiteSpace(str){
                 if (String.isNullOrEmpty(str)){return true;}
                 return !String.NON_WHITESPACE_REGEX.test(str);
             }
         );
         // 判断是否为有效数字或非空字符（数字可以转换成字符串的应用场景中使用）
-        Object.defineFreezeProperty(String, "isNumberOrString",
+        Object.freezeProp(String, "isNumberOrString",
             function isNumberOrString(str){
                 if (Number.isNumber(str) || !String.isNullOrEmpty(str)) {return true;}
                 return false;
@@ -162,7 +162,7 @@ export default class ApplicationBuilder {
 
         // ------------------------------------  扩展 Error --------------------------------------
         // 检查参数是否为Null
-        Object.defineFreezeProperty(Error, "throwIfNull",
+        Object.freezeProp(Error, "throwIfNull",
             function throwIfNull(target, name=null){
                 if (target === undefined){
                     throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} is required.`);
@@ -174,7 +174,7 @@ export default class ApplicationBuilder {
             }
         );
         // 检查参数是否为 String 类型
-        Object.defineFreezeProperty(Error, "throwIfNotString",
+        Object.freezeProp(Error, "throwIfNotString",
             function throwIfNotString(target, name = null){
                 Error.throwIfNull(target, name);
                 if (typeof target !== "string"){
@@ -184,7 +184,7 @@ export default class ApplicationBuilder {
             }
         );
         // 检查参数是否为空字符
-        Object.defineFreezeProperty(Error, "throwIfEmpty",
+        Object.freezeProp(Error, "throwIfEmpty",
             function throwIfEmpty(target, name=null){
                 Error.throwIfNotString(target, name);
                 if (target.length === 0){
@@ -194,7 +194,7 @@ export default class ApplicationBuilder {
             }
         );
         // 检查参数是否为空白字符
-        Object.defineFreezeProperty(Error, "throwIfWhiteSpace",
+        Object.freezeProp(Error, "throwIfWhiteSpace",
             function throwIfWhiteSpace(target, name=null){
                 Error.throwIfNotString(target, name);
                 if (!String.NON_WHITESPACE_REGEX.test(target)){
@@ -204,7 +204,7 @@ export default class ApplicationBuilder {
             }
         );
         // 检查参数是否为普通对象
-        Object.defineFreezeProperty(Error, "throwIfNotObject",
+        Object.freezeProp(Error, "throwIfNotObject",
             function throwIfNotObject(target, name=null){
                 if (!Object.isObject(target)){
                     throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be of object type.`);
@@ -213,7 +213,7 @@ export default class ApplicationBuilder {
             }
         );
         // 检查参数是否为函数
-        Object.defineFreezeProperty(Error, "throwIfNotFunction",
+        Object.freezeProp(Error, "throwIfNotFunction",
             function throwIfNotFunction(target, name=null){
                 if (typeof target !== "function"){
                     throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be of function type.`);
@@ -222,7 +222,7 @@ export default class ApplicationBuilder {
             }
         );
         // 检查参数是否为有效的数字
-        Object.defineFreezeProperty(Error, "throwIfNotNumber",
+        Object.freezeProp(Error, "throwIfNotNumber",
             function throwIfNotNumber(target, name=null){
                 if (typeof target !== "number" || !Number.isFinite(target)){
                     throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be of number type.`);
@@ -231,7 +231,7 @@ export default class ApplicationBuilder {
             }
         );
         // 检查参数是否为数组
-        Object.defineFreezeProperty(Error, "throwIfNotArray",
+        Object.freezeProp(Error, "throwIfNotArray",
             function throwIfNotArray(target, name=null){
                 if (!Array.isArray(target)){
                     throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be of array type.`);
@@ -240,7 +240,7 @@ export default class ApplicationBuilder {
             }
         );
         // 检查参数是否为 HTML 元素
-        Object.defineFreezeProperty(Error, "throwIfNotElement",
+        Object.freezeProp(Error, "throwIfNotElement",
             function throwIfNotElement(target, name=null){
                 if (typeof HTMLElement === 'undefined') {throw new Error("DOM API is not available in this environment.");}
                 if (!(target instanceof HTMLElement)){
@@ -254,7 +254,7 @@ export default class ApplicationBuilder {
         // (这些扩展方法依赖前面的扩展方法，所以要放在后面位置)
 
         // 去除字符串前后的空白，返回非空白字符串，或者返回提供的默认值（检查并抛出错误）
-        Object.defineFreezeProperty(String, "toNotEmptyString",
+        Object.freezeProp(String, "toNotEmptyString",
             function toNotEmptyString(str, name=null, defaultValue=null){
                 if (Number.isNumber(str)){str+="";}
                 if (!String.isNumberOrString(defaultValue)){
@@ -271,7 +271,7 @@ export default class ApplicationBuilder {
             }
         );
         // 创建URL对象（检查并抛出错误）
-        Object.defineFreezeProperty(URL, "create",
+        Object.freezeProp(URL, "create",
             function create(url, base = null){
                 url = String.toNotEmptyString(url, "URL");
                 if (base == null){
@@ -283,7 +283,7 @@ export default class ApplicationBuilder {
             }
         );
         // 创建 Element 对象
-        Object.defineFreezeProperty(Element, "create",
+        Object.freezeProp(Element, "create",
             function create(tag = "div", text = "", attrs = null){
                 tag = String.toNotEmptyString(tag, "Tag name", "div");
                 const ele = document.createElement(tag);
@@ -298,7 +298,7 @@ export default class ApplicationBuilder {
             }
         );
         // 深层批量创建 Element 对象
-        Object.defineFreezeProperty(Element, "createAll",
+        Object.freezeProp(Element, "createAll",
             function createAll(config){
                 if (Object.isObject(config)){
                     const parent = Element.create(config.tag, config.text, config.attrs);
@@ -336,29 +336,26 @@ export default class ApplicationBuilder {
         const application = new Application(this.#configuration, this.#serviceManager, this.#pluginManager);
         // 缓存不是单例服务（单独注册）
         this.#serviceManager.addTransient("cache", CacheService);
-        Object.defineFreezeProperty(application, "cache", new CacheService());
+        Object.freezeProp(application, "cache", new CacheService());
         // 批量注册单例服务
         const services = [
             {name: "router", service: RouterService},
-            {name: "layout", service: LayoutService, public: true},
-            {name: "global", service: GlobalService, public: true},
+            {name: "layout", service: LayoutService},
+            {name: "global", service: GlobalService},
             {name: "event", service: EventService},
             {name: "http", service: HttpService, deps: ["cache"]},
-            {name: "state", service: StateService, public: true},
-            {name: "storage", service: StorageService, public: true},
+            {name: "state", service: StateService},
+            {name: "storage", service: StorageService},
             {name: "reactive", service: ReactiveService},
-            {name: "component", service: ComponentService, public: true},
-            {name: "viewport", service: ViewportService, public: true},
-            {name: "utility", service: UtilityService, public: true},
-            {name: "text", service: TextService, public: true},
-            {name: "security", service: SecurityService, public: true}
+            {name: "component", service: ComponentService},
+            {name: "viewport", service: ViewportService},
+            {name: "utility", service: UtilityService},
+            {name: "text", service: TextService},
+            {name: "security", service: SecurityService}
         ];
         for (const service of services){
             this.#serviceManager.addSingleton(service.name, service.service, service.deps);
-            const instance = this.#serviceManager.get(service.name);
-            if (service.public) {
-                Object.defineFreezeProperty(application, service.name, instance);
-            }
+            Object.freezeProp(application, service.name, this.#serviceManager.get(service.name));
         }
         Object.freeze(application);
         return application;
