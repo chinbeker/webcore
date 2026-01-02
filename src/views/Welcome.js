@@ -40,7 +40,10 @@ export default class Welcome extends app.component.builder {
 
         const {reactive, event, cache, http} = this.services;     // 解构批量获取服务（必须先依赖服务注入）
 
-        // 使用 http 服务创建请求客户端
+        // 可以使用默认的请求客户端（本域）
+        // http.get("/src/styles/Welcome.css").then();
+
+        // 也可以创建新的请求客户端
         const api = http.create({
             url: '/src/styles/Welcome.css',
             // baseUrl: '',

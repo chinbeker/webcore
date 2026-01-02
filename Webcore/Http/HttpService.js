@@ -27,9 +27,7 @@ export default class HttpService {
             redirect: {type: "string",valid: ["follow", "error", "manual"]}
         }
         HttpClient.format = ["text","json","css","script","htm","xml"];
-        HttpClient.isKeyValuePair = function isKeyValuePair(target){
-            return ["[object Object]","[object Map]"].includes(Object.prototype.toString.call(target));
-        };
+        HttpClient.isKeyValuePair = function isKeyValuePair(target){return ["object", "map"].includes(Object.typeOf(target));};
         HttpClient.parse = async function parse(type, response){
             switch (type) {
                 case "json": return await response.json();

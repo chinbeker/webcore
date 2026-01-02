@@ -45,8 +45,6 @@ export default class ApplicationBuilder {
     }
 
     #extension(){
-        // 系统扩展方法
-        Object.freeze(Object.prototype);
         // 扩展 Object
         Object.defineProperty(Application, "defineProperty", {
             value: function defineProperty(target, key, val, desc={}){
@@ -68,17 +66,19 @@ export default class ApplicationBuilder {
         Object.freezeProp(Object, "sealProp",
             function sealProp(target, key, val){return Application.defineProperty(target, key, val, {writable: true});}
         );
+        // 备份基础方法
+        Object.freezeProp(Application, "toString", Object.prototype.toString);
         // 检查类型
         Object.freezeProp(Object, "typeOf",
             function typeOf(target){
                 if (target === undefined) {return "undefined";}
                 if (target === null) {return "null";}
-                return Object.prototype.toString.call(target).replace(/^\[object (\S+)\]$/, "$1").toLowerCase();
+                return Application.toString.call(target).replace(/^\[object (\S+)\]$/, "$1").toLowerCase();
             }
         );
         // 判断是否普通简单 Object 类型
         Object.freezeProp(Object, "isObject",
-            function isObject(target){return Object.prototype.toString.call(target) === "[object Object]";}
+            function isObject(target){return Application.toString.call(target) === "[object Object]";}
         );
         // 判断 Object 对象是否有原型
         Object.freezeProp(Object, "hasPrototype",
