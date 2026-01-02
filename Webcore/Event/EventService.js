@@ -4,9 +4,8 @@ import EventProvider from "./EventProvider.js";
 export default class EventService {
     constructor(){
         if (EventService.instance){return EventService.instance;}
-        Object.freezeProp(this, "provider", new EventProvider());
         Object.sealProp(EventService, "handlers", new WeakMap());
-
+        Object.freezeProp(EventProvider, "provider", new EventProvider());
         Object.freezeProp(EventService, "invoke", function invoke(event) {
             const type = event.type;
             let handler = null;
@@ -35,19 +34,12 @@ export default class EventService {
 
     // 事件通讯
     // 暴露方法，其他组件调用
-    expose(name, handlers){return this.provider.expose(name, handlers);}
-    use(name, event){return this.provider.use(name, event);}
-    delete(name){return this.provider.delete(name);}
+    expose(name, handlers){return EventProvider.provider.expose(name, handlers);}
+    use(name, event){return EventProvider.provider.use(name, event);}
+    delete(name){return EventProvider.provider.delete(name);}
 
-    has(element, event = null){
-        if (!(element instanceof HTMLElement)){return false;}
-        if (!EventService.handlers.has(element)){return false;}
-        if (!String.isNullOrWhiteSpace(event)) {
-            return Object.hasOwn(EventService.handlers.get(element), event.trim());
-        }
-        return true;
-    }
 
+    // 选择要绑定事件的元素
     select(element){
         if (Object.isElement(element)){
             return new EventBuilder(element);
@@ -57,7 +49,7 @@ export default class EventService {
             throw new ReferenceError("Invalid element.");
         }
     }
-
+    // EventBuilder 内部调用绑定事件
     register(builder){
         try {
             if (builder instanceof EventBuilder){
@@ -72,16 +64,26 @@ export default class EventService {
         }
     }
 
-
+    has(target, event){
+        if (String.isNullOrWhiteSpace(event)){return false;}
+        if (typeof target === "string"){return EventProvider.provider.has(target, event);}
+        if (!(target instanceof HTMLElement)){return false;}
+        if (!EventService.handlers.has(target)){return false;}
+        return Object.hasOwn(EventService.handlers.get(target), event.trim());
+    }
     emit(target, event){
-        if (this.has(target, event)){
-            const handler = EventService.handlers.get(target)[event.trim()];
-            try {
-                return handler(target);
-            } catch (error) {
-                console.error("Event emit error:", error);
-                return false;
-            }
+        if (!this.has(target, event)){return false;}
+        let handler = null;
+        if (typeof target === "string"){
+            handler = EventProvider.provider.use(target, event);
+        } else {
+            handler = EventService.handlers.get(target)[event.trim()];
+        }
+        try {
+            if (typeof handler === "function") {return handler();}
+        } catch (error) {
+            console.error("Event emit error:", error);
+            return false;
         }
         return false;
     }
@@ -110,7 +112,7 @@ export default class EventService {
 
     destroy() {
         EventService.handlers = new WeakMap();
-        this.provider.clear();
+        EventProvider.provider.clear();
         return true;
     }
 

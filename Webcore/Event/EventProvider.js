@@ -1,12 +1,9 @@
 export default class EventProvider {
-    static #instance = null;
-
     constructor(){
-        if (EventProvider.#instance) {return EventProvider.#instance;}
+        if (EventProvider.instance) {return EventProvider.instance;}
         Object.freezeProp(EventProvider, "events", new Map());
         Object.freeze(this);
-        EventProvider.#instance = this;
-        Object.freeze(EventProvider);
+        Object.freezeProp(EventProvider, "instance", this);
     }
 
      // 事件回调注册
@@ -21,9 +18,13 @@ export default class EventProvider {
     }
 
     // 检查是否已注册
-    has(name){
+    has(name, event = null){
         name = String.toNotEmptyString(name, "Provider");
-        return EventProvider.events.has(name);
+        if (EventProvider.events.has(name)){
+            if (String.isNullOrWhiteSpace(event)){return true;}
+            return Object.hasOwn(EventProvider.events.get(name), event.trim());
+        }
+        return false;
     }
 
     // 获取指定组件或事件的回调
