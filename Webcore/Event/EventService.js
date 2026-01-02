@@ -4,7 +4,7 @@ import EventProvider from "./EventProvider.js";
 export default class EventService {
     constructor(){
         if (EventService.instance){return EventService.instance;}
-        Object.freezeProp(EventService, "provider", new EventProvider());
+        Object.freezeProp(this, "provider", new EventProvider());
         Object.sealProp(EventService, "handlers", new WeakMap());
 
         Object.freezeProp(EventService, "invoke", function invoke(event) {
@@ -33,11 +33,11 @@ export default class EventService {
         Object.freezeProp(EventService, "instance", this);
     }
 
-    get provider(){return EventService.provider;}
-
-    expose(name, handlers){return EventService.provider.expose(name, handlers);}
-    use(name, event){return EventService.provider.use(name, event);}
-    delete(name){return EventService.provider.delete(name);}
+    // 事件通讯
+    // 暴露方法，其他组件调用
+    expose(name, handlers){return this.provider.expose(name, handlers);}
+    use(name, event){return this.provider.use(name, event);}
+    delete(name){return this.provider.delete(name);}
 
     has(element, event = null){
         if (!(element instanceof HTMLElement)){return false;}
@@ -110,7 +110,7 @@ export default class EventService {
 
     destroy() {
         EventService.handlers = new WeakMap();
-        EventService.provider.clear();
+        this.provider.clear();
         return true;
     }
 

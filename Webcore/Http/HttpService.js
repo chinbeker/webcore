@@ -5,7 +5,6 @@ export default class HttpService {
 
     constructor(cache){
         if (HttpService.#instance){return HttpService.#instance;}
-        Object.freezeProp(HttpService,"api", new Map());
         Object.freezeProp(HttpClient,"cache", cache);
         HttpClient.method = ["GET", "POST", "PUT", "DELETE", "HEAD", "PATCH", "OPTIONS"];
         HttpClient.config = {
@@ -42,15 +41,16 @@ export default class HttpService {
             }
         };
         Object.freeze(HttpClient);
-        Object.freeze(HttpService);
+        Object.freezeProp(this, "default", new HttpClient());
         Object.freeze(this);
         HttpService.#instance = this;
+        Object.freeze(HttpService);
     }
 
     create(config=null){return new HttpClient(config);}
-    has(name){if (typeof name === "string" && name){return HttpService.api.has(name);}return false;}
-    get(name){if (this.has(name)){return HttpService.api.get(name);}return null;}
-    set(name, client){if (typeof name === "string" && name){HttpService.api.set(name, client);}return this;}
-    delete(name){if (this.has(name)){HttpService.api.delete(name);return this;}}
-    clear(){HttpService.api.clear();return true;}
+
+    async get(url, query, timeout, abort){return this.default.get(url,query,timeout,abort);}
+    async post(url, params, timeout, abort){return this.default.post(url,params,timeout,abort)}
+    async put(url, params, timeout, abort){return this.default.put(url,params,timeout,abort)}
+    async delete(url, params, timeout, abort){return this.default.delete(url,params,timeout,abort)}
 }

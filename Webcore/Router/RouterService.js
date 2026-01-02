@@ -16,9 +16,9 @@ export default class RouterService {
                 this.init();this.anchor(document.body);
             },{once:true})
         };
-        Object.freeze(RouterService);
         Object.freeze(this);
         RouterService.#instance = this;
+        Object.freeze(RouterService);
     }
 
     init(){

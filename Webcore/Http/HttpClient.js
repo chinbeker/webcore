@@ -1,23 +1,22 @@
 export default class HttpClient {
     url = null;
     baseUrl = null;
-    parse = "text";
-    headers = Object.pure();
-    payload = Object.pure();
-    expand = Object.pure();
-    encoding = "utf-8";
-    abort = false;
-    abortController = null;
-    cache = 0;
-    timeout = 0;
-    timeoutId = null;
-    ontimeout = (message)=>{console.info(message || "Request timeout.")};
-    onabort = (message)=>{console.info(message || "Request aborted.")}
 
     constructor(config=null){
+        Object.freezeProp(this, "headers", Object.pure());
+        Object.freezeProp(this, "payload", Object.pure());
+        Object.freezeProp(this, "expand", Object.pure());
+        Object.sealProp(this, "cache", 0);
+        Object.sealProp(this, "timeout", 0);
+        Object.sealProp(this, "abort", false);
+        Object.sealProp(this, "parse", "text");
+        Object.sealProp(this, "encoding", "utf-8");
+        Object.sealProp(this, "timeoutId", null);
+        Object.sealProp(this, "abortController", null);
+        Object.sealProp(this, "ontimeout", (message)=>{console.info(message || "Request timeout.")});
+        Object.sealProp(this, "onabort", (message)=>{console.info(message || "Request aborted.")});
         // 检查 url
-        if (!HttpClient.isKeyValuePair(config)){throw new TypeError("Invalid configuration.")}
-        if (!Object.hasOwn(config, "url")){throw new TypeError("URL is required.")}
+        if (!HttpClient.isKeyValuePair(config)){return this;}
 
         // 检查参数类型
         for (const [key, prop] of Object.entries(HttpClient.config)){
@@ -91,52 +90,74 @@ export default class HttpClient {
         }
     }
 
-    getUrl(payload=null){
+    async get(url, payload=null, timeout=0, abort=false){
         try {
-            const url = URL.create(this.url, this.baseUrl);
+            url = this.getUrl(url, payload);
+            return await this.send(url, "GET", null, timeout, abort);
+        } catch (error) {throw error;}
+    }
+
+    async post(url, payload, timeout=0, abort=false){
+        return await this.send(url, "POST", payload, timeout, abort);
+    }
+
+    async put(url, payload, timeout=0, abort=false){
+        return await this.send(url, "PUT", payload, timeout, abort);
+    }
+
+    async delete(url, payload, timeout=0, abort=false){
+        return await this.send(url, "DELETE", payload, timeout, abort);
+    }
+
+
+    getUrl(url, payload=null){
+        try {
+            url = String.toNotEmptyString(url, "URL", this.url)
+            const Url = URL.create(url, this.baseUrl);
             payload = payload || this.payload;
             if (HttpClient.isKeyValuePair(payload)){
-                for (const key of Object.keys(payload)){url.searchParams.set(key, payload[key])}
+                for (const key of Object.keys(payload)){Url.searchParams.set(key, payload[key])}
             }
-            return url;
+            return Url;
         } catch (error) {
             throw error;
         }
     }
 
-    cancel(){
-        if (this.abortController){
-            this.abortController.abort();
-            return true;
-        }
-        return false;
-    }
-
+    // 核心请求方法
     async send(url=null, method="GET", payload=null, timeout=0, abort=false){
-        url = url || this.getUrl();
+        // ------------------------------- 检查 URL ---------------------------------
+        if (!(url instanceof URL)){url = this.getUrl(url);}
+        // ------------------------------- 检查缓存 ---------------------------------
         if (this.cache > 0 && HttpClient.cache.has(url.href)){
             return Promise.resolve(HttpClient.cache.get(url.href));
         }
+        // ------------------------------- 创建请求配置 ---------------------------------
         const options = Object.pure();
-
         // 检查 method
         if (typeof method !== "string"){throw new TypeError("The method is invalid.")}
         options.method = method.trim().toUpperCase();
         if (!HttpClient.method.includes(options.method)){throw new TypeError("The method is invalid.")}
+        // 添加 headers 请求头
         if (Object.keys(this.headers).length > 0){options.headers = new Headers(this.headers);}
+        // 添加扩展配置
         Object.assign(options, this.expand);
 
-        if (payload && typeof payload === "object"){
+        // 添加负载信息
+        if (payload !== undefined && payload !== null){
+            // 如果是 Object或 Map，则转换为JSON字符串
             if (HttpClient.isKeyValuePair(payload)){
                 payload = JSON.stringify(payload);
+                // 自动添加 JSON 类型的 Content-Type
                 if (Object.hasOwn(options, "headers")){
                     options.headers.set("Content-Type",`application/json; charset=${this.encoding}`);
                 }
             } else if (Object.hasOwn(options, "headers")) {
+                // 否则删除 Content-Type (浏览器会自动判断)
                 options.headers.delete("Content-Type");
             }
+            options.body = payload;
         }
-        if (payload){options.body = payload;}
 
         // 控制器
         this.abortController = new AbortController();
@@ -182,23 +203,11 @@ export default class HttpClient {
         }
     }
 
-    async get(payload=null, timeout=0, abort=false){
-        try {
-            const url = this.getUrl(payload);
-            return await this.send(url, "GET", null, timeout, abort);
-        } catch (error) {throw error;}
+    cancel(){
+        if (this.abortController){
+            this.abortController.abort();
+            return true;
+        }
+        return false;
     }
-
-    async post(payload, timeout=0, abort=false){
-        return await this.send(null, "POST", payload, timeout, abort);
-    }
-
-    async put(payload, timeout=0, abort=false){
-        return await this.send(null, "PUT", payload, timeout, abort);
-    }
-
-    async delete(payload, timeout=0, abort=false){
-        return await this.send(null, "DELETE", payload, timeout, abort);
-    }
-
 }

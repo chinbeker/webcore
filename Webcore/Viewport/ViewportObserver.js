@@ -4,9 +4,9 @@ export default class ViewportObserver {
     constructor(){
         if (ViewportObserver.#instance){return ViewportObserver.#instance;}
         Object.freezeProp(ViewportObserver, "observers", new Set());
-        Object.freeze(ViewportObserver);
         Object.freeze(this);
         ViewportObserver.#instance = this;
+        Object.freeze(ViewportObserver);
     }
 
     removed(target, func, options={childList: true, subtree: true}){

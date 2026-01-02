@@ -9,7 +9,6 @@ export default class ReactiveService {
         }
         Object.freeze(ReactiveElement);
         Object.freeze(ReactiveStore);
-        Object.freeze(this);
         ReactiveService.#instance = this;
     }
 

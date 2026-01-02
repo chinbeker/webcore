@@ -4,9 +4,9 @@ export default class EventProvider {
     constructor(){
         if (EventProvider.#instance) {return EventProvider.#instance;}
         Object.freezeProp(EventProvider, "events", new Map());
-        Object.freeze(EventProvider);
         Object.freeze(this);
         EventProvider.#instance = this;
+        Object.freeze(EventProvider);
     }
 
      // 事件回调注册

@@ -7,9 +7,7 @@ export default class ComponentService {
     #components = new Map();
 
     constructor(){
-        if (ComponentService.#instance) {
-            return ComponentService.#instance;
-        }
+        if (ComponentService.#instance) {return ComponentService.#instance;}
         Object.freezeProp(this, "builder", ComponentBuilder);
         Object.freeze(this);
         ComponentService.#instance = this;

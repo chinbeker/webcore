@@ -5,8 +5,8 @@ export default class Encoding {
         if (Encoding.#instance){return Encoding.#instance;}
         Object.freezeProp(Encoding, "encoder", new TextEncoder());
         Object.freezeProp(Encoding, "decoder", new TextDecoder("utf-8"));
-        Object.freeze(Encoding);
         Encoding.#instance = this;
+        Object.freeze(Encoding);
     }
 
     arrayBufferToBase64(buffer) {

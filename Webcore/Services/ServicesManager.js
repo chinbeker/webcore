@@ -5,9 +5,9 @@ export default class ServiceManager {
         if (ServiceManager.#instance){return ServiceManager.#instance;}
         Object.freezeProp(ServiceManager, "services", new Map());
         Object.freezeProp(ServiceManager, "singletons", new Map());
-        Object.freeze(ServiceManager);
         Object.freeze(this);
         ServiceManager.#instance = this;
+        Object.freeze(ServiceManager);
     }
 
 

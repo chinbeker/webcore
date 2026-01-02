@@ -44,13 +44,10 @@ export default class Welcome extends app.component.builder {
         const api = http.create({
             url: '/src/styles/Welcome.css',
             // baseUrl: '',
-            cache: 10                                               // 缓存 10 秒
+            // cache: 10                                               // 缓存 10 秒
         });
         // api.get().then();
-        // api.get().post();
-
-        // 保存 api 后可重复使用
-        http.set("welcome", api);
+        // api.get().then();
 
 
         // 选择或创建组件DOM元素，变为数据响应式元素( reactive.element() 会把 DOM 元素变成响应式，修改 .value 会自动更新页面内容)

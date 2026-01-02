@@ -9,8 +9,8 @@ export default class LayoutService {
         Object.sealProp(LayoutService, "executed", false);
         this.start();
         LayoutService.executed = true;
-        Object.freeze(LayoutService);
         LayoutService.#instance = this;
+        Object.freeze(LayoutService);
     }
 
     get landscape(){return this.orientation.landscape;}

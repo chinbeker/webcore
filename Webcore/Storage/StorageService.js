@@ -38,6 +38,7 @@ export default class StorageService {
             }
         );
         StorageService.#instance = this;
+        Object.freeze(StorageService);
     }
 
     // get database(){return StorageService.#database;}
