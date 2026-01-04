@@ -13,75 +13,72 @@ export default class ComponentService {
         ComponentService.#instance = this;
     }
 
-    async load(url){
+    async load(url, tag){
         url = URL.create(url);
         try {
             const request = await import(url.href);
             const component = request.default;
-            this.register(component);
-            return new component();
-        } catch (error) {
-            console.error("Component loading failed: ", error.message);
-            return null;
+            this.register(component, tag);
+            return component;
+        } catch {
+            throw new Error("Component loading failed.");
         }
     }
 
     has(name){
         name = ComponentBuilder.check(name);
-        if (name === null) {return false;}
         return this.#components.has(name);
     }
 
     get(name){
         name = ComponentBuilder.check(name);
-        if (name === null) {return null;}
-        if (!this.has(name)){
-            console.error("Component not registered, please register first");
-            return null;
+        if (!this.#components.has(name)){
+            throw new Error("Component not registered, please register first");
         }
         return this.#components.get(name).createInstance();
     }
     getClass(name){
         name = ComponentBuilder.check(name);
-        if (name === null) {return null;}
-        if (!this.has(name)){
-            console.error("Component not registered, please register first");
-            return null;
+        if (!this.#components.has(name)){
+            throw new Error("Component not registered, please register first");
         }
         return this.#components.get(name).getComponentClass();
     }
 
-    register(component, tag = null){
-        if (!tag && !component.tag){console.error("Missing component tag name");return this;}
-        let name = tag || ComponentBuilder.check(component.tag);
-        if (this.has(name)) {console.error(`Component "${name}" is already registered, skipping.`);return this;}
+    register(component, tag){
+        if (Object.getPrototypeOf(component) !== ComponentBuilder){
+            throw new Error('The component is invalid and is not a "webcore" component.');
+        }
+        if (String.isNullOrWhiteSpace(tag)){
+            if (String.isNullOrWhiteSpace(component.tag)){throw new Error("Missing component tag name.");}
+            tag = ComponentBuilder.check(component.tag)
+        } else {
+            tag = ComponentBuilder.check(tag);
+        }
+        if (this.#components.has(tag)) {
+            throw new Error(`Component "${tag}" is already registered, skipping.`);
+        }
         try {
-            customElements.define(name, component);
-            const meta = new Component(name, component);
-            this.#components.set(name, meta);
-            console.log(`Component "${name}" registered successfully.`);
+            customElements.define(tag, component);
+            const meta = new Component(tag, component);
+            this.#components.set(tag, meta);
+            console.log(`Component "${tag}" registered successfully.`);
             return this;
         } catch (error) {
-            console.error(`Failed to register component "${name}": ${error.message}`);
-            return this;
+            throw new Error(`Failed to register component "${tag}": ${error.message}.`);
         }
     }
 
     registerAll(components) {
-        if (!Object.isObject(components)) {
-            console.error("Components must be provided as an object");
-            return this;
-        }
-        Object.entries(components).forEach(([name, component]) => {
-            this.register(component, name);
+        Error.throwIfNotObject(components);
+        Object.entries(components).forEach(([tag, component]) => {
+            this.register(component, tag);
         });
         return this;
     }
 
     clear() {
-        const count = this.#components.size;
         this.#components.clear();
-        console.log(`Cleared ${count} components from registry.`);
         return this;
     }
 }

@@ -7,6 +7,7 @@ import Welcome from "./views/Welcome.js";
 // app.configuration.set('environment','development');
 
 // 组件注册
+console.log('5. 组件开始加载渲染')
 app.component.register(Welcome);
 // app.component.register(Dialog);
 

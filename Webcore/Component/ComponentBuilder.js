@@ -101,8 +101,8 @@ export default class ComponentBuilder extends HTMLElement {
         super();
         this.#builder = Object.getConstructorOf(this);
         this.#name = this.#builder.tag;
-        this.#builder.template = new ComponentTemplate();
-        this.#builder.styles = new ComponentStyles();
+        if (!Object.hasOwn(this.#builder, "template")){this.#builder.template = new ComponentTemplate();}
+        if (!Object.hasOwn(this.#builder, "styles")){this.#builder.styles = new ComponentStyles();}
         if (Object.isObject(config)){this.#config = app.configuration.create(config);}
         Object.freeze(this.#builder);
         this.create();
@@ -186,7 +186,7 @@ export default class ComponentBuilder extends HTMLElement {
     }
 
     static check(name){
-        Error.throwIfNotString(name, "Component tag name");
+        name = String.toNotEmptyString(name, "Component tag name");
         if (!name.includes("-")){name = `core-${name}`;}
         return name;
     }

@@ -71,7 +71,7 @@ export default class EventService {
         if (!EventService.handlers.has(target)){return false;}
         return Object.hasOwn(EventService.handlers.get(target), event.trim());
     }
-    emit(target, event){
+    emit(target, event, ...args){
         if (!this.has(target, event)){return false;}
         let handler = null;
         if (typeof target === "string"){
@@ -80,7 +80,7 @@ export default class EventService {
             handler = EventService.handlers.get(target)[event.trim()];
         }
         try {
-            if (typeof handler === "function") {return handler();}
+            if (typeof handler === "function") {return handler(...args);}
         } catch (error) {
             console.error("Event emit error:", error);
             return false;

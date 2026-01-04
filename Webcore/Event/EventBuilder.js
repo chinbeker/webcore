@@ -35,6 +35,8 @@ export default class EventBuilder {
         return this.on(event, handler, options);
     }
     click(handler, options) {return this.on("click", handler, options);}
+    pointerdown(handler, options) {return this.on("pointerdown", handler, options);}
+    pointerup(handler, options) {return this.on("pointerup", handler, options);}
     submit(handler, options) {return this.on("submit", handler, options);}
     reset(handler, options) {return this.on("reset", handler, options);}
     invalid(handler, options) {return this.on("invalid", handler, options);}

@@ -29,9 +29,10 @@ export default class LayoutService {
     // 桌面端与移动端横竖屏字体优化
     setupFontScaling(root){
         if (root.classList.contains("dync")){return false;}
+        root.style.fontSize = "11.55pt";
         const orient = screen.orientation;
         const font = {base: 28.57, initial: parseFloat(getComputedStyle(root).getPropertyValue("font-size")) || 15.4}
-
+        root.removeAttribute("style");
         const angle = ()=>{
             if (orient.angle == 0 || orient.angle == 180) {
                 root.classList.add("portrait");
