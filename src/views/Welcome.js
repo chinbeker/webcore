@@ -78,7 +78,7 @@ export default class Welcome extends app.component.builder {
         // 主动暴露组件方法，让其他组件调用
         event.expose('welcome', {
             show(arg1, arg2){console.log(`已运行组件暴露的 show 方法，并拿到参数 ${arg1} 和 ${arg2}`)}
-        });                    // 没有 Vue 那复杂而麻烦的组件通讯逻辑，什么父子关系、祖孙关系等，统统不需要考虑
+        });                    // 没有复杂的组件通讯逻辑，什么父传子、子传父等，统统不需要考虑
         // 其他组件要调用时，只需要：
         const welcomeProvider = event.use("welcome")            // 拿到暴露的所有方法，按需调用
         const welcomeShow = event.use("welcome", "show")        // 只拿暴露的 show 方法，后面调用
@@ -89,10 +89,13 @@ export default class Welcome extends app.component.builder {
         const api = http.create({
             url: '/src/styles/Welcome.css',
             // baseUrl: '',
+            // timeout: 1000,                                               // 超时 1000 毫秒 (1秒)
             // cache: 10                                                    // 缓存 10 秒
         });
-        // api.get().then();
-        // api.get().then();
+        // api.get().then();       //   await api.get()
+        // api.post().then();      //   await api.get()
+        // api.put().then();       //   await api.get()
+        // api.delete().then();    //   await api.get()
     }
 
     // 生命周期
