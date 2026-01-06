@@ -11,6 +11,7 @@ export default class FrameworkCore {
         Object.freeze(this);
         FrameworkCore.#instance = this;
         Object.freeze(FrameworkCore);
+        console.log("2. 框架核心已启动");
     }
 
     start(){

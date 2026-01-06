@@ -1,4 +1,4 @@
-import app from "../Webcore/App.js";
+import webcore from "../Webcore/App.js";
 import Welcome from "./views/Welcome.js";
 // import Dialog from "./components/Dialog.js";
 
@@ -7,8 +7,8 @@ import Welcome from "./views/Welcome.js";
 // app.configuration.set('environment','development');
 
 // 组件注册
-console.log('5. 组件开始加载渲染')
-app.component.register(Welcome);
+console.log('6. 组件开始加载渲染')
+webcore.component.register(Welcome);
 // app.component.register(Dialog);
 
 
@@ -20,7 +20,9 @@ app.component.register(Welcome);
 
 
 // 启动应用程序
-app.run();
-Object.freezeProp(self,"app",app);
+webcore.run();
 
-export default app;
+// 挂载到windows全局属性
+Object.freezeProp(self, "webcore", webcore);
+
+export default webcore;

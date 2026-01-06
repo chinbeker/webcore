@@ -23,7 +23,7 @@ console.log("1. 创建应用程序");
 const builder = Application.createBuilder();
 
 // 添加服务配置
-console.log("2. 为应用程序注册服务");
+console.log("3. 为应用程序注册服务");
 const services = [
     {name: "router", service: RouterService, singleton: true, global: true},
     {name: "layout", service: LayoutService, singleton: true, global: true},

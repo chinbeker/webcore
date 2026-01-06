@@ -68,7 +68,7 @@ export default class ApplicationBuilder {
     }
 
     build(){
-        console.log("3. 各项服务启动");
+        console.log("5. 各项系统服务已启动");
         Object.freeze(this.#application);
         return this.#application;
     }

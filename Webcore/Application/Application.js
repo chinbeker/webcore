@@ -28,7 +28,7 @@ export default class Application {
     }
 
     run(){
-        console.log("6. 应用程序启动中……");
+        console.log("7. 应用程序启动中……");
         if (Object.hasOwn(this, "initial")){this.initial.execute();}
         console.log("8. 应用程序启动完成");
         delete Object.getPrototypeOf(this).run;
