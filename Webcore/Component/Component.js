@@ -1,12 +1,16 @@
 export default class Component {
-    name = null;
-    component = null;
-    props = null;
+    keepAlive = false;
 
     constructor(name, component){
         this.name = name;
         this.props = component.observedAttributes || null;
         this.component = component;
+        if (Object.hasOwn(component,"keepAlive")){
+            this.keepAlive = component.keepAlive;
+        } else {
+             component.keepAlive = false;
+        }
+
     }
 
     createInstance(){

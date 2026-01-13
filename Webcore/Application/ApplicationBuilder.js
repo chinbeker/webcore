@@ -34,7 +34,8 @@ export default class ApplicationBuilder {
         this.#configuration.set("environment", window.isSecureContext && location.protocol === "http:" ? "development": "production");
         this.#configuration.set("framework", Object.pure({
             name: "webcore",
-            version: "1.0.0"
+            version: "1.0.0",
+            author: "huachen"
         }));
     }
 

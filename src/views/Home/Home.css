@@ -1,0 +1,28 @@
+.root {
+    height: 100%;
+}
+router-view {
+    box-sizing: border-box;
+    display: block;
+    height: 70%;
+    border: 1px solid rgb(221, 221, 221);
+}
+.root > div {
+    height: 30%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+    background-color: antiquewhite;
+}
+a {
+    padding-inline: 0.8em;
+    font-size: 1.8em;
+    color: white;
+    line-height: 1.8em;
+    background-color: blue;
+    border-radius: 0.15em;
+}
+a:hover {
+    background-color: blueviolet;
+}

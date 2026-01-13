@@ -8,7 +8,7 @@ export default class TextService {
     constructor(){
         if (TextService.#instance){return TextService.#instance;}
         Object.freezeProp(this, "encoding", new Encoding());
-        // this.sanitize = new Sanitize();
+        Object.sealProp(this, "sanitize", null);
         TextService.#instance = this;
     }
 

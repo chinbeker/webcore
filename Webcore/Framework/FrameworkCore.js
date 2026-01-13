@@ -164,6 +164,7 @@ export default class FrameworkCore {
             }
         );
 
+
         // 检查参数是否为 String 类型
         Object.freezeProp(Error, "throwIfNotString",
             function throwIfNotString(target, name = null){
@@ -247,6 +248,17 @@ export default class FrameworkCore {
                 return true;
             }
         );
+
+        // 检查参数是否为Null
+        Object.freezeProp(Error, "throwIfNotHasOwn",
+            function throwIfNotHasOwn(target, key, name){
+                Error.throwIfNotObject(target, name)
+                if (!Object.hasOwn(target, key)){
+                    throw new TypeError(`${name || key} cannot be null or empty.`);
+                }
+                return true;
+            }
+        );
     }
 
     // ------------------------------------ 其他扩展 --------------------------------------
@@ -272,6 +284,7 @@ export default class FrameworkCore {
         // 创建URL对象（检查并抛出错误）
         Object.freezeProp(URL, "create",
             function create(url, base = null){
+                if (url instanceof URL){return url;}
                 url = String.toNotEmptyString(url, "URL");
                 if (base == null){
                     base = Object.hasOwn(self, "app") && self.app.configuration.has("base") ? self.app.configuration.get("base") : location.origin;
@@ -282,9 +295,20 @@ export default class FrameworkCore {
             }
         );
 
+        // text 资源加载器
+        Object.freezeProp(URL, "loader",
+            async function loader(url){
+                url = URL.create(url);
+                try {
+                    const res = await fetch(url);
+                    return await res.text();
+                } catch (error) {throw error;}
+            }
+        );
+
         // 创建 Element 对象
         Object.freezeProp(Element, "create",
-            function create(tag = "div", text = "", attrs = null){
+            function create(tag = "div", attrs = null, text = ""){
                 tag = String.toNotEmptyString(tag, "Tag name", "div");
                 const ele = document.createElement(tag);
                 if (Object.isObject(attrs)){
@@ -302,7 +326,7 @@ export default class FrameworkCore {
         Object.freezeProp(Element, "createAll",
             function createAll(config){
                 if (Object.isObject(config)){
-                    const parent = Element.create(config.tag, config.text, config.attrs);
+                    const parent = Element.create(config.tag, config.attrs, config.text);
                     if (Array.isArray(config.children) && config.children.length > 0){
                         for (const child of config.children){
                             if (Object.isObject(child)){parent.append(Element.createAll(child))}

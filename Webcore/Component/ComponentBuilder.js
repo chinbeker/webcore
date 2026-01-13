@@ -1,89 +1,5 @@
-import app from "/Webcore/App.js";
-
-class ComponentTemplate {
-    #initial = true;
-    #fragment = null;
-    #html = "<slot></slot>";
-
-    get initial(){return this.#initial;}
-    get html(){return this.#html;}
-
-    set html(value){
-        if (this.#initial && !String.isNullOrWhiteSpace(value)){
-            this.#html = ComponentTemplate.compress(value);
-            this.#initial = false;
-        }
-    }
-
-    has(){return !String.isNullOrWhiteSpace(this.#html);}
-
-    fragment(clone = false){
-        if (this.#fragment == null){
-            this.#fragment = document.createRange().createContextualFragment(this.#html);
-        }
-        if (clone === true){
-            return this.#fragment.firstElementChild.cloneNode(true);
-        } else {
-            return this.#fragment.firstElementChild;
-        }
-    }
-
-    static compress(html){return html.replace(/\n\s*/g, "").replace(/>\s+</g, "><").trim()}
-}
-
-class ComponentStyles {
-    #href = null;
-    #style = null;
-    #initial = true;
-    #loaded = false;
-    #styleSheet = null;
-
-    get initial(){return this.#initial;}
-    get href(){return this.#href;}
-    get style(){return this.#style;}
-
-    set style(value){
-        if (this.#initial){
-            if (value.endsWith(".css")){
-                this.#href = value;
-                this.#initial = false;
-            } else if (value.length > 3) {
-                this.#style = ComponentStyles.compress(value);
-                this.#initial = false;
-            }
-        }
-    }
-
-    async getStyleSheet(){
-        if (this.#href !== null && !this.#loaded){
-            try {
-                const style = await app.loader(this.#href);
-                this.#style = ComponentStyles.compress(style);
-                this.#loaded = true;
-            } catch  {
-                throw new TypeError("Component style loading failed.");
-            }
-        }
-        if (!this.#initial && this.#styleSheet == null){
-            const sheet = new CSSStyleSheet();
-            sheet.replaceSync(this.#style);
-            this.#styleSheet = [sheet];
-        }
-        return this.#styleSheet;
-    }
-
-    static compress(style){
-        return style.replace(/\n\s*/g, "")
-        .replace(/\s*{\s*/g, "{")
-        .replace(/\s*}\s*/g, "}")
-        .replace(/\s*:\s*/g, ":")
-        .replace(/\s*;\s*/g, ";")
-        .replace(/;\s*}/g, "}")
-        .trim();
-    }
-}
-
-
+import ComponentStyles from "./ComponentStyles.js";
+import ComponentTemplate from "./ComponentTemplate.js";
 
 export default class ComponentBuilder extends HTMLElement {
     #name = "core-element";
@@ -96,18 +12,29 @@ export default class ComponentBuilder extends HTMLElement {
     #shadow = null;
     #config = null;
     #builder = null;
+    #route = null;
+    #views = null;
+    #created = false;
 
-    constructor(config=null){
+    constructor(){
         super();
         this.#builder = Object.getConstructorOf(this);
+        if (Object.hasOwn(this.#builder, "instance")){
+            return this.#builder.instance;
+        }
         this.#name = this.#builder.tag;
         if (!Object.hasOwn(this.#builder, "template")){this.#builder.template = new ComponentTemplate();}
         if (!Object.hasOwn(this.#builder, "styles")){this.#builder.styles = new ComponentStyles();}
-        if (Object.isObject(config)){this.#config = app.configuration.create(config);}
-        Object.freeze(this.#builder);
-        this.create();
-        this.#create();
-        this.#build();
+
+        if (typeof this.create === "function"){this.create()}
+
+        if (this.#builder.router !== true){
+            this.#create().then(root => {
+                if (typeof this.init === "function"){this.init();}
+                this.#build(root)
+            })
+        }
+
     }
 
     // 访问器
@@ -121,15 +48,21 @@ export default class ComponentBuilder extends HTMLElement {
     get name(){return this.#name;}
 
 
+    loadTemplate(url){
+        this.#builder.template.href = url;
+        return this;
+    }
+    loadStyles(url){
+        this.#builder.styles.href = url;
+        return this;
+    }
     template(html) {
         if (typeof html !== "string"){console.error("Component template must be of string type.");}
         this.#builder.template.html = html;
         return this;
     }
-
     styles(styles) {
         if (typeof styles !== "string"){console.error("Component style must be of string type.");}
-        // if ()
         this.#builder.styles.style = styles;
         return this;
     }
@@ -141,48 +74,89 @@ export default class ComponentBuilder extends HTMLElement {
         this.#mode = shadowMode;
         return this;
     }
-
     inject(service){
         Error.throwIfNotArray(service, "Component service inject");
         this.#inject = service;
         return this;
     }
+    configuration(config){
+        this.#config = webcore.configuration.create(config);
+        return this;
+    }
+
 
     // 声明周期事件
-    connectedCallback(){if (typeof this.onConnected === "function"){return this.onConnected();}}
-    attributeChangedCallback(attr, old, value){if (typeof this.onAttributeChanged === "function"){return this.onAttributeChanged(attr, value, old);}}
-    adoptedCallback(){if (typeof this.onAdopted === "function"){return this.onAdopted();}}
-    disconnectedCallback(){if (typeof this.onDisconnected === "function"){return this.onDisconnected();}}
+    async connectedCallback(){
+        if (typeof this.onConnected === "function"){return this.onConnected();}
+    }
+    attributeChangedCallback(attr, old, value){
+        if (typeof this.onAttributeChanged === "function"){return this.onAttributeChanged(attr, value, old);}
+    }
+    adoptedCallback(){
+        if (typeof this.onAdopted === "function"){return this.onAdopted();}
+    }
+    disconnectedCallback(){
+        if (typeof this.onDisconnected === "function"){return this.onDisconnected();}
+    }
+    async routeCallback(route){
+        this.#route = route;
+        if (this.#created === true){
+            if (typeof this.onRoute === "function"){
+                this.onRouteChange(this.#route)
+            }
+            const view = this.#views.get(route.view);
+            if (view){view.clear();return view;}
+            return null;
+        }
+        const root = await this.#create();
+        if (typeof this.init === "function"){this.init()}
+        this.#views = new Map();
+        const views = root.querySelectorAll("router-view");
+        if (views.length > 0){
+            for (let i = 0;i < views.length;i ++){
+                const name = views[i].hasAttribute("name") ? views[i].getAttribute("name") : "default";
+                this.#views.set(name, views[i])
+            }
+        }
+        if (typeof this.onRoute === "function"){
+            this.onRouteChange(this.#route);
+        }
+        this.#build(root);
+        return this.#views.get(route.view);
+    }
 
     // 公共方法
     selector(selector){return this.#root.querySelector(selector)}
     service(name) {return Object.hasOwn(this.#services, name) ? this.#services[name] : null;}
 
-
-    // 抽象方法
-    create(func){if (typeof func !== "function"){throw new TypeError('"create" method must be implemented by subclass')}return this;}
-    render(func){if (typeof func !== "function"){throw new TypeError('"render" method must be implemented by subclass')}return this;}
-
     // 私有方法
-    #create(){
+    async #create(){
         this.#shadow = this.attachShadow({ mode: this.#mode });
+        this.#created = true;
+        // 加载 HTML
         if (this.#builder.template.has()) {
-            this.#root = this.#builder.template.fragment(true);
+            this.#root = await this.#builder.template.fragment();
         }
+        // 加载样式
+        if (!this.#builder.styles.initial){
+            const styleSheet = await this.#builder.styles.styleSheet();
+            this.#shadow.adoptedStyleSheets = styleSheet;
+        }
+        // 解析服务
         if (this.#inject.length > 0){
             this.#services = Object.pure();
             for (const service of this.#inject){
-                this.#services[service] = app.getService(service);
+                this.#services[service] = webcore.getService(service);
             }
         }
-
+        return this.#root;
     }
-    async #build(){
-        if (!this.#builder.styles.initial){
-            const styleSheet = await this.#builder.styles.getStyleSheet();
-            this.#shadow.adoptedStyleSheets = styleSheet;
-        }
-        this.#shadow.appendChild(this.#root);
+    // 执行组件逻辑后的挂载方法
+    async #build(root){
+        const element = root.querySelector(".root");
+        if (element) {this.#root = element} else {this.#root = root.firstElementChild;}
+        top.webcore.router.bind(this.root);
+        this.#shadow.appendChild(root);
     }
 
     static check(name){

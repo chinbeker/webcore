@@ -19,18 +19,12 @@ export default class Application {
     hasService(name){return Application.services.has(name);}
     serviceNames(){return Application.services.serviceNames();}
 
-    async loader(url){
-        url = URL.create(url);
-        try {
-            const res = await fetch(url);
-            return await res.text();
-        } catch (error) {throw error;}
-    }
+    async loader(url){return await URL.loader(url);}
 
     run(){
         console.log("7. 应用程序启动中……");
         if (Object.hasOwn(this, "initial")){this.initial.execute();}
-        console.log("8. 应用程序启动完成");
+        console.log("9. 应用程序启动完成");
         delete Object.getPrototypeOf(this).run;
     }
 }

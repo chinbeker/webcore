@@ -1,6 +1,4 @@
-import app from "/Webcore/App.js";
-
-export default class Dialog extends app.component.builder() {
+export default class Dialog extends webcore.component.builder() {
   static tag = 'dialog';
   constructor(){
     super();
