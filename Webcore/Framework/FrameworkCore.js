@@ -155,10 +155,10 @@ export default class FrameworkCore {
         Object.freezeProp(Error, "throwIfNull",
             function throwIfNull(target, name=null){
                 if (target === undefined){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} is required.`);
+                    throw new TypeError(`${name || "Parameter"} is required.`);
                 }
                 if (target === null){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} cannot be null.`);
+                    throw new TypeError(`${name || "Parameter"} cannot be null.`);
                 }
                 return true;
             }
@@ -170,7 +170,7 @@ export default class FrameworkCore {
             function throwIfNotString(target, name = null){
                 Error.throwIfNull(target, name);
                 if (typeof target !== "string"){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be of string type.`);
+                    throw new TypeError(`${name || "Parameter"} must be of string type.`);
                 }
                 return true;
             }
@@ -181,7 +181,7 @@ export default class FrameworkCore {
             function throwIfEmpty(target, name=null){
                 Error.throwIfNotString(target, name);
                 if (target.length === 0){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} cannot be empty.`);
+                    throw new TypeError(`${name || "Parameter"} cannot be empty.`);
                 }
                 return true;
             }
@@ -192,7 +192,7 @@ export default class FrameworkCore {
             function throwIfWhiteSpace(target, name=null){
                 Error.throwIfNotString(target, name);
                 if (!String.NON_WHITESPACE_REGEX.test(target)){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} cannot be empty or whitespace.`);
+                    throw new TypeError(`${name || "Parameter"} cannot be empty or whitespace.`);
                 }
                 return true;
             }
@@ -202,7 +202,7 @@ export default class FrameworkCore {
         Object.freezeProp(Error, "throwIfNotObject",
             function throwIfNotObject(target, name=null){
                 if (!Object.isObject(target)){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be of object type.`);
+                    throw new TypeError(`${name || "Parameter"} must be of object type.`);
                 }
                 return true;
             }
@@ -212,7 +212,7 @@ export default class FrameworkCore {
         Object.freezeProp(Error, "throwIfNotFunction",
             function throwIfNotFunction(target, name=null){
                 if (typeof target !== "function"){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be of function type.`);
+                    throw new TypeError(`${name || "Parameter"} must be of function type.`);
                 }
                 return true;
             }
@@ -222,7 +222,7 @@ export default class FrameworkCore {
         Object.freezeProp(Error, "throwIfNotNumber",
             function throwIfNotNumber(target, name=null){
                 if (typeof target !== "number" || !Number.isFinite(target)){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be of number type.`);
+                    throw new TypeError(`${name || "Parameter"} must be of number type.`);
                 }
                 return true;
             }
@@ -232,7 +232,7 @@ export default class FrameworkCore {
         Object.freezeProp(Error, "throwIfNotArray",
             function throwIfNotArray(target, name=null){
                 if (!Array.isArray(target)){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be of array type.`);
+                    throw new TypeError(`${name || "Parameter"} must be of array type.`);
                 }
                 return true;
             }
@@ -243,7 +243,7 @@ export default class FrameworkCore {
             function throwIfNotElement(target, name=null){
                 if (typeof HTMLElement === 'undefined') {throw new Error("DOM API is not available in this environment.");}
                 if (!(target instanceof HTMLElement)){
-                    throw new TypeError(`${String.isNullOrWhiteSpace(name) ? "Parameter" : name} must be a HTML element.`);
+                    throw new TypeError(`${name || "Parameter"} must be a HTML element.`);
                 }
                 return true;
             }

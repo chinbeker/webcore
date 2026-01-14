@@ -1,3 +1,5 @@
+import RouterService from "../Router/RouterService.js";
+
 export default class HistoryService {
     constructor(){
         if (HistoryService.instance){return HistoryService.instance;}
@@ -18,7 +20,7 @@ export default class HistoryService {
         }
          else if (this.mode === "history"){
             top.onpopstate = function pathchange(event){
-                top.webcore.router.replace(location.pathname);
+                top.webcore.router.replace(location.pathname.replace(RouterService.instance.base, ""));
             };
         }
     }

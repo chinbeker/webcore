@@ -11,8 +11,8 @@ import ReactiveService from "./Reactive/ReactiveService.js";
 import StorageService from "./Storage/StorageService.js";
 import ComponentService from "./Component/ComponentService.js";
 import HistoryService from "./History/HistoryService.js";
-import ViewportService from "./Viewport/ViewportService.js";
 import UtilityService from "./Utility/UtilityService.js";
+import ViewportService from "./Viewport/ViewportService.js";
 import TextService from "./Text/TextService.js";
 import SecurityService from "./Security/SecurityService.js";
 // import AuthorizationServce from "./Authorization/AuthorizationServce.js";
@@ -37,8 +37,8 @@ const services = [
     {name: "reactive", service: ReactiveService, singleton: true, global: true},
     {name: "component", service: ComponentService, singleton: true, global: true},
     {name: "history", service: HistoryService, singleton: true, global: true},
-    {name: "viewport", service: ViewportService, singleton: true, global: true},
     {name: "utility", service: UtilityService, singleton: true, global: true},
+    {name: "viewport", service: ViewportService, singleton: true, global: true},
     {name: "text", service: TextService, singleton: true, global: true},
     {name: "security", service: SecurityService, singleton: true, global: true},
 ];

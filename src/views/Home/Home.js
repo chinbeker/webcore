@@ -8,8 +8,8 @@ export default class HomeView extends webcore.component.builder {
     }
 
     create(){
-        this.loadStyles('/src/views/Home/Home.css')
-        .loadTemplate('/src/views/Home/Home.html')
+        this.styles('/src/views/Home/Home.css')
+        .template('/src/views/Home/Home.html')
         .mode('closed')
         .inject(['event', 'http', 'router', 'cache', 'reactive'])
     }
@@ -55,8 +55,12 @@ export default class HomeView extends webcore.component.builder {
         // console.log("Home 组件已经卸载")
     }
 
-    // 路由触发
-    onRouteChange(route){
-        // this.render(JSON.stringify(route))
+    // 路由触发事件
+    onRouteBefore(route){
+        return true;
+    }
+
+    onRouteAfter(route){
+
     }
 }

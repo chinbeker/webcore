@@ -5,6 +5,7 @@ import HelloWorld from "../views/HelloWorld/HelloWorld.js";
 
 const router = {
     mode: "hash",
+    base: "/",
     routes: [
         {
             path: "/",

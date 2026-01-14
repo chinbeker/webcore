@@ -1,3 +1,4 @@
+import ComponentService from "./ComponentService.js";
 import ComponentStyles from "./ComponentStyles.js";
 import ComponentTemplate from "./ComponentTemplate.js";
 
@@ -28,7 +29,7 @@ export default class ComponentBuilder extends HTMLElement {
 
         if (typeof this.create === "function"){this.create()}
 
-        if (this.#builder.router !== true){
+        if (this.#builder.routing !== true){
             this.#create().then(root => {
                 if (typeof this.init === "function"){this.init();}
                 this.#build(root)
@@ -48,25 +49,36 @@ export default class ComponentBuilder extends HTMLElement {
     get name(){return this.#name;}
 
 
-    loadTemplate(url){
-        this.#builder.template.href = url;
-        return this;
-    }
-    loadStyles(url){
-        this.#builder.styles.href = url;
-        return this;
-    }
     template(html) {
-        if (typeof html !== "string"){console.error("Component template must be of string type.");}
-        this.#builder.template.html = html;
+        if (this.#builder.template.initial === false){
+            return this;
+        }
+        Error.throwIfNotString(html, "Component template");
+        if (!html.includes("<") && !html.includes(">")){
+            try {
+                const url = new URL(html, ComponentService.instance.base);
+                this.#builder.template.href = url;
+            } catch  {
+                this.#builder.template.html = html;
+            }
+        } else {
+            this.#builder.template.html = html;
+        }
         return this;
     }
     styles(styles) {
-        if (typeof styles !== "string"){console.error("Component style must be of string type.");}
-        this.#builder.styles.style = styles;
+        if (this.#builder.styles.initial === false){
+            return this;
+        }
+        Error.throwIfNotString(styles, "Component style");
+        if (styles.endsWith(".css") || (!styles.includes("{") && !styles.includes("}"))
+        ){
+            this.#builder.styles.href = new URL(styles, ComponentService.instance.base);
+        } else {
+            this.#builder.styles.style = styles;
+        }
         return this;
     }
-
     mode(shadowMode = "open") {
         if (!["open", "closed"].includes(shadowMode)) {
             throw new TypeError('Shadow DOM mode must be either "open" or "closed"');
@@ -98,13 +110,9 @@ export default class ComponentBuilder extends HTMLElement {
     disconnectedCallback(){
         if (typeof this.onDisconnected === "function"){return this.onDisconnected();}
     }
-    async routeCallback(route){
-        this.#route = route;
+    async routeCallback(name){
         if (this.#created === true){
-            if (typeof this.onRoute === "function"){
-                this.onRouteChange(this.#route)
-            }
-            const view = this.#views.get(route.view);
+            const view = this.#views.get(name);
             if (view){view.clear();return view;}
             return null;
         }
@@ -118,11 +126,8 @@ export default class ComponentBuilder extends HTMLElement {
                 this.#views.set(name, views[i])
             }
         }
-        if (typeof this.onRoute === "function"){
-            this.onRouteChange(this.#route);
-        }
         this.#build(root);
-        return this.#views.get(route.view);
+        return this.#views.get(name);
     }
 
     // 公共方法

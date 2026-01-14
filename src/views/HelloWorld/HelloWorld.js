@@ -68,7 +68,12 @@ export default class HelloWorld extends webcore.component.builder {
         // console.log("Hello World 组件已经卸载")
     }
 
-    onRouteChange(route){
-        // console.log(route)
+    // 路由触发事件
+    onRouteBefore(route){
+        return true;
+    }
+
+    onRouteAfter(route){
+
     }
 }

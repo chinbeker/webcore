@@ -3,17 +3,17 @@ import ComponentBuilder from "./ComponentBuilder.js";
 import ComponentStyles from "./ComponentStyles.js";
 
 export default class ComponentService {
-    static #instance = null;
-
     #components = new Map();
 
     constructor(){
-        if (ComponentService.#instance) {return ComponentService.#instance;}
+        if (ComponentService.instance) {return ComponentService.instance;}
         Object.freezeProp(this, "builder", ComponentBuilder);
+        Object.sealProp(this, "base", location.origin);
         Object.sealProp(ComponentStyles, "base", []);
         this.styles("@layer reset,token,theme,framework,base,layout,component,page,utilitie,override;@layer reset{:host{box-sizing:border-box;contain:content}header,nav,main,footer,article,section,aside{box-sizing:border-box}h1,h2,h3,h4,h5,h6{box-sizing:border-box}ul,ol,li,dl,dt,dd{box-sizing:border-box}div,p,span,a,i,img,svg,button{box-sizing:border-box}dialog,details,summary{box-sizing:border-box}body,h1,h2,h3,h4,h5,h6,p{margin:0}ol,ul,dl,dd,figure,blockquote{margin:0}img,video{width:100%;font-size:inherit;vertical-align:top}a{text-decoration-line:none;vertical-align:middle}ul,ol{padding:0;list-style-position:inside;list-style-type:none}button{outline:none;font-size:inherit;white-space:nowrap;border:none;appearance:none;cursor:pointer}button:focus{outline:none}a[to],a[data-href],a[data-to]{cursor:pointer}dialog{overscroll-behavior-y:contain}a,img{-webkit-user-drag:none}a,summary,button,svg{-webkit-user-select:none;user-select:none}a,li,button,[onclick]{-webkit-tap-highlight-color:transparent}}");
         Object.freeze(this);
-        ComponentService.#instance = this;
+        Object.freezeProp(ComponentService, "instance", this);
+        Object.freeze(ComponentService);
     }
 
     async load(url, tag){

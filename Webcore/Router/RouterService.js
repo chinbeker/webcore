@@ -2,12 +2,11 @@ import Router from "./Router.js";
 import HistoryService from "../History/HistoryService.js";
 
 export default class RouterService {
-    static instance = null;
 
     constructor(){
         if (RouterService.instance){return RouterService.instance;}
 
-        // Object.sealProp(this, "base", location.origin);
+        Object.sealProp(this, "base", "");
 
         // 普通a元素
         Object.sealProp(RouterService, "executed", false);
@@ -75,18 +74,26 @@ export default class RouterService {
         return true;
     };
 
+    // 使用路由
     use(router){
         Error.throwIfNotObject(router, "Router");
         Object.freezeProp(this, "mode", Router.check(router.mode));
+        if (!String.isNullOrWhiteSpace(router.base)){
+            try {
+                const url = new URL(router.base.trim(), location.origin);
+                this.base = url.pathname.replace(/\/+$/, '')
+            } catch  {
+                throw new URIError("Router base path invalid.")
+            }
+        }
 
         // 配置主路由
         top.addEventListener("DOMContentLoaded", ()=>{
             // 普通页面
+            this.init();
             if (document.documentElement.classList.contains("app")) {
-                this.init();
                 this.anchor(document.body);
             }
-
             // 单页应用
             const view = document.querySelector("router-view");
             if (view){
@@ -145,6 +152,7 @@ export default class RouterService {
             element.querySelectorAll("a[to]").forEach(el=>{
                 el.onclick = RouterService.handlers.router;
             });
+            this.anchor(element);
             return true;
         }
         return false;

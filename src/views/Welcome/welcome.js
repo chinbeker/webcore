@@ -9,8 +9,8 @@ export default class Welcome extends webcore.component.builder {
 
     // 组件第一步，必须使用 create 方法，设置初始模板或样式等。（可链式调用）
     create(){
-        this.loadTemplate('/src/views/welcome/welcome.html')                // 设置初始模板
-        .loadStyles('/src/views/welcome/welcome.css')                       // 也可通过 url 加载样式表
+        this.template('/src/views/welcome/welcome.html')                // 设置初始模板
+        .styles('/src/views/welcome/welcome.css')                       // 也可通过 url 加载样式表
         .mode('closed')                                                     // 影子DOM模式 (默认值 open)
         .inject(['event', 'cache', 'http', 'reactive'])                     // 依赖服务注入
     }
@@ -100,5 +100,14 @@ export default class Welcome extends webcore.component.builder {
         console.log("Welcome 组件从页面中卸载");
         // 组件卸载时要做的回收工作
         this.services.event.delete('welcome');            // 删除向外暴露的方法
+    }
+
+    // 路由触发事件
+    onRouteBefore(route){
+        return true;
+    }
+
+    onRouteAfter(route){
+
     }
 }
