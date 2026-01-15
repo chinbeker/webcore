@@ -26,7 +26,7 @@ export default class ApplicationBuilder {
         // 创建服务容器对象
         this.#serviceManager = new ServiceManager();
         // 创建插件管理服务
-        this.#pluginManager = new PluginManager();
+        this.#pluginManager = new PluginManager(this.#serviceManager);
         // 创建应用程序
         this.#application = new Application(this.#configuration, this.#serviceManager, this.#pluginManager);
 

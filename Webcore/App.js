@@ -4,13 +4,12 @@ import RouterService from "./Router/RouterService.js";
 import GlobalService from "./Global/GlobalService.js";
 import LayoutService from "./Layout/LayoutService.js";
 import EventService from "./Event/EventService.js";
-import HttpService from "./Http/HttpService.js";
 import CacheService from "./Cache/CacheService.js";
+import HttpService from "./Http/HttpService.js";
 import StateService from "./State/StateService.js";
 import ReactiveService from "./Reactive/ReactiveService.js";
 import StorageService from "./Storage/StorageService.js";
 import ComponentService from "./Component/ComponentService.js";
-// import HistoryService from "./History/HistoryService.js";
 import UtilityService from "./Utility/UtilityService.js";
 import ViewportService from "./Viewport/ViewportService.js";
 import TextService from "./Text/TextService.js";
@@ -32,7 +31,6 @@ const services = [
     {name: "storage", service: StorageService, singleton: true, global: true},
     {name: "reactive", service: ReactiveService, singleton: true, global: true},
     {name: "component", service: ComponentService, singleton: true, global: true},
-    // {name: "history", service: HistoryService, singleton: true, global: true},
     {name: "utility", service: UtilityService, singleton: true, global: true},
     {name: "viewport", service: ViewportService, singleton: true, global: true},
     {name: "text", service: TextService, singleton: true, global: true},

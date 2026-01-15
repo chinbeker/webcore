@@ -14,7 +14,7 @@ export default class Application {
 
     getConfig(key){return this.configuration.get(key)}
     setConfig(key,value){return this.configuration.set(key,value)}
-    useService(name,service,options){Application.services.register(name,service,options);return this;}
+    addService(name,service,options){Application.services.register(name,service,options);return this;}
     getService(name){return Application.services.resolve(name)}
     addSingleton(name,service,deps,opts){Application.services.addSingleton(name,service,deps,opts);return this;}
     addTransient(name,service,deps,opts){Application.services.addTransient(name,service,deps,opts);return this;}
@@ -22,15 +22,12 @@ export default class Application {
     usePlugin(plugin,options){this.plugin.use(plugin,options);return this;}
     hasService(name){return Application.services.has(name)}
     serviceNames(){return Application.services.serviceNames()}
-    pluginNames(){return this.plugin.pluginNames()}
     resolve(names){
         Error.throwIfNotArray(names, "Service names")
         const services = Object.pure();
         for (const name of names){
             if (Application.services.has(name)){
                 services[name] = Application.services.resolve(name);
-            } else if (this.plugin.has(name)){
-                services[name] = this.plugin.resolve(name);
             }
         }
         return services;

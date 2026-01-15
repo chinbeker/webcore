@@ -7,7 +7,7 @@ export default class ServiceManager {
     }
 
     #create(service) {
-        const dependency = service.dependency.map(dep => this.get(dep));
+        const dependency = service.dependency.map(dep => this.resolve(dep));
         return new service.constructor(...dependency);
     }
 
