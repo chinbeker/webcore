@@ -96,11 +96,11 @@ export default class RouterService {
         // 监听地址栏变化
         if (this.mode === "hash"){
             top.onhashchange = function hashchange(event){
-                this.replace(location.hash.replace("#",""));
+                RouterService.instance.replace(location.hash.replace("#",""));
             }
         } else if (this.mode === "history"){
             top.onpopstate = function pathchange(event){
-                this.replace(location.pathname.replace(this.base, ""));
+                RouterService.instance.replace(location.pathname.replace(RouterService.instance.base, ""));
             };
         }
 
