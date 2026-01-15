@@ -1,6 +1,10 @@
 import CacheEntry from "./CacheEntry.js";
 
 export default class CacheService {
+    static singleton = true;
+    static system = true;
+    static serviceName = "cache";
+
     #data = new Map();
 
     constructor(){Object.freeze(this);}

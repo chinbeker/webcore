@@ -3,6 +3,10 @@ import HttpClient from "./HttpClient.js";
 export default class HttpService {
     static #instance = null;
 
+    static singleton = true;
+    static system = true;
+    static serviceName = "http";
+
     constructor(cache){
         if (HttpService.#instance){return HttpService.#instance;}
         Object.freezeProp(HttpClient,"cache", cache);

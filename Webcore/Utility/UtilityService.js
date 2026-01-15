@@ -1,6 +1,10 @@
 export default class UtilityService {
     static #instance = null;
 
+    static singleton = true;
+    static system = true;
+    static serviceName = "utility";
+
     constructor(){
         if (UtilityService.#instance){return UtilityService.#instance;}
         UtilityService.#instance = this;

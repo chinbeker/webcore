@@ -11,19 +11,20 @@ export default class HomeView extends webcore.component.builder {
         this.styles('/src/views/Home/Home.css')
         .template('/src/views/Home/Home.html')
         .mode('closed')
-        .inject(['event', 'http', 'router', 'cache', 'reactive'])
+        .inject(['event', 'http', 'router', 'cache', 'reactive','text','viewport'])
     }
 
     init(){
         this.hook();
+
         // this.render();
         // console.dir(this);
     }
 
     hook(){
         const {event, router} = this.services;
-        this.element.router = this.selector('router-view')
-
+        // this.element.router = this.selector('router-view')
+        // console.log(this.services)
 
         // event.select(this.selector('a')).click(()=>{
         //     router.push('/home/welcome');
@@ -33,7 +34,7 @@ export default class HomeView extends webcore.component.builder {
     }
 
     render(params){
-        this.element.router.render(params)
+        // this.element.router.render(params)
     }
 
 

@@ -1,23 +1,40 @@
 import ApplicationBuilder from "./ApplicationBuilder.js";
 
 export default class Application {
-    static #instance = null;
-
     constructor(configuration, services, plugin){
-        if (Application.#instance) {return Application.#instance;}
+        if (Application.instance) {return Application.instance;}
         Object.freezeProp(this, "configuration", configuration);
+        Object.freezeProp(this, "plugin", plugin);
         Object.freezeProp(Application, "services", services);
+        Object.freezeProp(Application, "instance", this);
         Object.freeze(Application);
-        Application.#instance = this;
     }
 
     static createBuilder(){return new ApplicationBuilder();}
 
-    getConfig(key){return this.configuration.get(key);}
-    setConfig(key,value){return this.configuration.set(key,value);}
-    getService(name){return Application.services.get(name);}
-    hasService(name){return Application.services.has(name);}
-    serviceNames(){return Application.services.serviceNames();}
+    getConfig(key){return this.configuration.get(key)}
+    setConfig(key,value){return this.configuration.set(key,value)}
+    useService(name,service,options){Application.services.register(name,service,options);return this;}
+    getService(name){return Application.services.resolve(name)}
+    addSingleton(name,service,deps,opts){Application.services.addSingleton(name,service,deps,opts);return this;}
+    addTransient(name,service,deps,opts){Application.services.addTransient(name,service,deps,opts);return this;}
+    getPlugin(name){return this.plugin.get(name)}
+    usePlugin(plugin,options){this.plugin.use(plugin,options);return this;}
+    hasService(name){return Application.services.has(name)}
+    serviceNames(){return Application.services.serviceNames()}
+    pluginNames(){return this.plugin.pluginNames()}
+    resolve(names){
+        Error.throwIfNotArray(names, "Service names")
+        const services = Object.pure();
+        for (const name of names){
+            if (Application.services.has(name)){
+                services[name] = Application.services.resolve(name);
+            } else if (this.plugin.has(name)){
+                services[name] = this.plugin.resolve(name);
+            }
+        }
+        return services;
+    }
 
     async loader(url){return await URL.loader(url);}
 

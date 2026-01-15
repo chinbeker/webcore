@@ -1,4 +1,9 @@
 export default class InitialService {
+
+    static singleton = true;
+    static system = true;
+    static serviceName = "initial";
+
     constructor(){
         if (InitialService.instance){return InitialService.instance;}
         Object.sealProp(this, "executed", false);

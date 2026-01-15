@@ -2,11 +2,18 @@
 import webcore from "../Webcore/App.js";
 import router from "./router/index.js"
 
+// 导入插件
+import SecurityService from "/Webcore/Security/SecurityService.js";
+
 // Configuration 配置
 // app.configuration.set('base','http://localhost/');
 
 // 添加路由表
-webcore.router.use(router);
+webcore.useRouter(router);
+
+// 安装插件
+webcore.usePlugin(SecurityService, {global: true});
+
 
 // 初始化
 webcore.initial.open = ()=>{console.log('   8.1 自定义初始化逻辑')};

@@ -2,6 +2,10 @@ import EventBuilder from "./EventBuilder.js";
 import EventProvider from "./EventProvider.js";
 
 export default class EventService {
+    static singleton = true;
+    static system = true;
+    static serviceName = "event";
+
     constructor(){
         if (EventService.instance){return EventService.instance;}
         Object.sealProp(EventService, "handlers", new WeakMap());

@@ -3,6 +3,10 @@ import ViewportObserver from "./ViewportObserver.js";
 export default class ViewportService {
     static #instance = null;
 
+    static singleton = true;
+    static system = true;
+    static serviceName = "viewport";
+
     constructor(){
         if (ViewportService.#instance){return ViewportService.#instance}
         Object.freezeProp(this, "observe", new ViewportObserver());

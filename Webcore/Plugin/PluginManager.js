@@ -1,72 +1,52 @@
+import Application from "../Application/Application.js";
+import ServiceManager from "../Services/ServicesManager.js";
+
 export default class PluginManager {
-    #plugins = new Map();
+
     constructor(){
-
+        Object.freezeProp(PluginManager, "plugins", new ServiceManager());
+        Object.freeze(this);
     }
 
-    get name(){
-        return this.constructor.name;
-    }
+    get names(){return this.pluginNames()}
 
-    // 插件安装方法
-    install(app, options = {}) {
-        throw new Error(""install" method must be implemented by subclass")
-    }
-
-    // 插件卸载方法
-    uninstall(app) {
-        throw new Error(""uninstall" method must be implemented by subclass")
-    }
-
-    onstart(){
-
-    }
-
-    onstop(){
-
-    }
+    has(name){return PluginManager.plugins.has(name)}
+    get(name){return PluginManager.plugins.get(name)}
+    resolve(name){return PluginManager.plugins.resolve(name)}
+    pluginNames(){return PluginManager.plugins.serviceNames()}
 
     // 安装插件
     use(plugin, options = {}) {
-        const name = plugin.name || plugin.constructor.name;
-        if (this.#plugins.has(name)) {
-            console.warn(`插件 "${name}" 已安装`);
-            return this;
+        if (typeof plugin !== "function"){throw new TypeError("Invalid plugin.")}
+        const name = String.toNotEmptyString(plugin.serviceName, "Plugin service name");
+        if (PluginManager.plugins.has(name)) {
+            throw new Error(`The "${name}" plugin has been registered.`);
         }
         if (typeof plugin.install === "function") {
-            plugin.install(this, options);
-        } else if (typeof plugin === "function") {
-            plugin(this, options);
-        } else {
-            throw new Error("插件必须提供 install 方法或是一个函数");
+            plugin.install(Application.instance, options);
         }
-
-        this.#plugins.set(name, {
-            instance: plugin,
-            options,
-            installedAt: new Date()
-        });
-
-        console.log(`插件 "${name}" 安装成功`);
-
+        const config = Object.pure({singleton: false, dependency: []},false);
+        if (plugin.singleton===true){config.singleton = true}
+        if (Array.isArray(plugin.dependency)){config.dependency = dependency}
+        if (Object.isObject(options)){Object.assign(config, options)}
+        config.type = "plugin";
+        config.installedAt = new Date();
+        PluginManager.plugins.register(name, plugin, config);
+        if (options.global===true){
+            if (plugin.system){Object.freezeProp(Application.instance,name,this.resolve(name))}
+            else {Application.instance[name]=this.resolve(name)}
+        }
         return this;
     }
 
     // 卸载插件
     unuse(name) {
-        if (!this.#plugins.has(name)){
-            console.warn(`插件 "${name}" 未安装`);
-            return this;
+        if (!PluginManager.services.has(name)){return this;}
+        const plugin = PluginManager.services.get(name);
+        if (typeof plugin.uninstall === "function") {
+            plugin.instance.uninstall(Application.instance);
         }
-        const plugin = this.#plugins.get(name);
-
-        if (typeof plugin.instance.uninstall === "function") {
-            plugin.instance.uninstall(this);
-        }
-
-        this.#plugins.delete(name);
-        console.log(`插件 "${name}" 卸载成功`);
-
+        PluginManager.services.delete(name);
         return this;
     }
 }

@@ -252,7 +252,9 @@ export default class FrameworkCore {
         // 检查参数是否为Null
         Object.freezeProp(Error, "throwIfNotHasOwn",
             function throwIfNotHasOwn(target, key, name){
-                Error.throwIfNotObject(target, name)
+                if (typeof target !== "object" && typeof target !== "function"){
+                    throw new TypeError(`${name || key} must be of object type.`);
+                }
                 if (!Object.hasOwn(target, key)){
                     throw new TypeError(`${name || key} cannot be null or empty.`);
                 }

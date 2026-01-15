@@ -1,3 +1,4 @@
+import Application from "../Application/Application.js";
 import ComponentService from "./ComponentService.js";
 import ComponentStyles from "./ComponentStyles.js";
 import ComponentTemplate from "./ComponentTemplate.js";
@@ -8,7 +9,6 @@ export default class ComponentBuilder extends HTMLElement {
     #inject = [];
     #services = Object.pure();
     #state = Object.pure();
-    #element = Object.pure();
     #root = null;
     #shadow = null;
     #config = null;
@@ -42,11 +42,11 @@ export default class ComponentBuilder extends HTMLElement {
     get root(){return this.#root;}
     get shadow(){return this.#shadow;}
     get services(){return this.#services;}
-    get element(){return this.#element;}
     get config(){return this.#config;}
-    get state(){return this.#state;}
     get props(){return this.#builder.observedAttributes || null;}
     get name(){return this.#name;}
+    get state(){return this.#state;}
+    set state(value){this.#state=value;}
 
 
     template(html) {
@@ -92,7 +92,7 @@ export default class ComponentBuilder extends HTMLElement {
         return this;
     }
     configuration(config){
-        this.#config = webcore.configuration.create(config);
+        this.#config = Application.instance.configuration.create(config);
         return this;
     }
 
@@ -149,10 +149,7 @@ export default class ComponentBuilder extends HTMLElement {
         }
         // 解析服务
         if (this.#inject.length > 0){
-            this.#services = Object.pure();
-            for (const service of this.#inject){
-                this.#services[service] = webcore.getService(service);
-            }
+            this.#services = Application.instance.resolve(this.#inject);
         }
         return this.#root;
     }
@@ -160,7 +157,7 @@ export default class ComponentBuilder extends HTMLElement {
     async #build(root){
         const element = root.querySelector(".root");
         if (element) {this.#root = element} else {this.#root = root.firstElementChild;}
-        top.webcore.router.bind(this.root);
+        Application.instance.router.bind(root);
         this.#shadow.appendChild(root);
     }
 

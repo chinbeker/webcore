@@ -1,11 +1,17 @@
+import Application from "../Application/Application.js";
 import Router from "./Router.js";
-import HistoryService from "../History/HistoryService.js";
 
 export default class RouterService {
 
+    static singleton = true;
+    static system = true;
+    static serviceName = "router";
+
     constructor(){
         if (RouterService.instance){return RouterService.instance;}
-
+        Object.freezeProp(Object.getPrototypeOf(Application.instance), "useRouter", function useRouter(router){
+            RouterService.instance.use(router)
+        });
         Object.sealProp(this, "base", "");
 
         // 普通a元素
@@ -87,6 +93,17 @@ export default class RouterService {
             }
         }
 
+        // 监听地址栏变化
+        if (this.mode === "hash"){
+            top.onhashchange = function hashchange(event){
+                this.replace(location.hash.replace("#",""));
+            }
+        } else if (this.mode === "history"){
+            top.onpopstate = function pathchange(event){
+                this.replace(location.pathname.replace(this.base, ""));
+            };
+        }
+
         // 配置主路由
         top.addEventListener("DOMContentLoaded", ()=>{
             // 普通页面
@@ -130,16 +147,11 @@ export default class RouterService {
                 Object.freezeProp(this, "push", function push(to){RouterService.router.push(to)});
                 Object.freezeProp(this, "replace", function replace(to){RouterService.router.replace(to)});
 
-                Object.freezeProp(HistoryService.instance, "push", function push(to){RouterService.router.push(to)});
-                Object.freezeProp(HistoryService.instance, "replace", function replace(to){RouterService.router.replace(to)});
-
                 // 启动
                 RouterService.router.start();
             }
             Object.freeze(RouterService);
         },{once:true});
-
-        top.webcore.history.useRouter(this.mode);
     }
 
 

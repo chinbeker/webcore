@@ -2,6 +2,7 @@ import FrameworkCore from "../Framework/FrameworkCore.js";
 import Application from "./Application.js";
 import Configuration from "../Configuration/Configuration.js";
 import ServiceManager from "../Services/ServicesManager.js";
+import PluginManager from "../Plugin/PluginManager.js";
 
 export default class ApplicationBuilder {
     static #instance = null;
@@ -25,7 +26,7 @@ export default class ApplicationBuilder {
         // 创建服务容器对象
         this.#serviceManager = new ServiceManager();
         // 创建插件管理服务
-        // this.#pluginManager = new PluginManager();
+        this.#pluginManager = new PluginManager();
         // 创建应用程序
         this.#application = new Application(this.#configuration, this.#serviceManager, this.#pluginManager);
 
@@ -52,7 +53,7 @@ export default class ApplicationBuilder {
             this.#serviceManager.addTransient(service.name, service.service, service.dependency);
         }
         if (service.global === true){
-            Object.freezeProp(this.#application, service.name, this.#serviceManager.get(service.name));
+            Object.freezeProp(this.#application, service.name, this.#serviceManager.resolve(service.name));
         }
     }
 
@@ -70,7 +71,6 @@ export default class ApplicationBuilder {
 
     build(){
         console.log("5. 各项系统服务已启动");
-        Object.freeze(this.#application);
         return this.#application;
     }
 }
