@@ -7,7 +7,7 @@ import Route from "./Route.js";
 class RouterView extends HTMLElement {
     constructor(){super()}
     render(view){
-        this.replaceChildren(view)
+        this.replaceChildren(view);
     }
     clear(){
         this.replaceChildren()
@@ -61,18 +61,20 @@ export default class Router {
                 if (len > 0){
                     for (let i = 0;i < len;i ++){
                         results[i].render(views[i+1]);
+                        this.scrollTo(results[i], views[i+1].position)
                     }
                 }
                 results[len].render(target);
+                this.scrollTo(results[len], target.position)
             } catch {
                 return false;
             }
         }
         // 检查一级路由是否已经在DOM中，避免重复渲染
         if (!this.view.contains(root)){
-            this.view.render(root)
+            this.view.render(root);
+            this.scrollTo(this.view, root.position)
         }
-
         // 路由之后的回调
         if (typeof target.onRouteAfter === "function"){
             target.onRouteAfter(route);
@@ -97,9 +99,28 @@ export default class Router {
 
     // 路由入口
     async #routing(route){
+        let routes = this.routes.get(route.from);
+
+        // 保存跳转前的滚动位置
+        for (const route of routes){
+            if (this.views.has(route.path)){
+                const view = this.views.get(route.path);
+                if (view.parentElement){
+                    route.component.position.left = view.parentElement.scrollLeft;
+                    route.component.position.top = view.parentElement.scrollTop;
+                } else {
+                    route.component.position.left = 0;
+                    route.component.position.top = 0;
+                }
+            }
+        }
+
+        // 获取真实路径
         const pathname = this.routes.pathname(route);
         if (pathname === null) {return false;}
-        const routes = this.routes.get(pathname);
+
+        // 获取路由表信息
+        routes = this.routes.get(pathname);
         if (routes.length === 0){return false;}
         const views = [];
 
@@ -111,9 +132,13 @@ export default class Router {
                 if (!this.views.has(route.path)){
                     this.views.set(route.path, new component())
                 }
-                views.push(this.views.get(route.path));
+                const view = this.views.get(route.path)
+                view.position = component.position;
+                views.push(view);
             } else {
-                views.push(new component());
+                const view = new component();
+                view.position = Object.pure({left:0,top:0},false);
+                views.push(view);
             }
             component.routing = false;
         }
@@ -136,6 +161,20 @@ export default class Router {
             this.#render(pathname, route, views, root, target);
         }
         return true;
+    }
+
+    scrollTo(target, position){
+        const smooth = getComputedStyle(target).scrollBehavior === "smooth";
+        if (smooth){target.style.scrollBehavior = "auto";}
+        if (target.scrollLeft !== position.left){
+            target.scrollLeft = position.left;
+        }
+        if (target.scrollTop !== position.top){
+            target.scrollTop = position.top;
+        }
+        if (smooth){
+            target.style.scrollBehavior = "smooth";
+        }
     }
 
     start(to){

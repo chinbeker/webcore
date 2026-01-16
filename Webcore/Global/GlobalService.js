@@ -7,7 +7,7 @@ export default class GlobalService {
         if (GlobalService.#instance){return GlobalService.#instance;}
         Object.freezeProp(this,"system",new GlobalData());
         Object.freezeProp(this,"vars",new GlobalData());
-        Object.freezeProp(this,"state",new GlobalData());
+        Object.freezeProp(this,"constants",new GlobalData());
         this.start();
         Object.freeze(this);
         GlobalService.#instance = this;

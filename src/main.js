@@ -1,14 +1,18 @@
 // const webcore = window.webcore;
 import webcore from "../Webcore/App.js";
+// import components from "./components/index.js"
 import router from "./router/index.js"
 
 // 导入插件
 import SecurityService from "/Webcore/Security/SecurityService.js";
 
 // Configuration 配置
-// app.configuration.set('base','http://localhost/');
+webcore.setConfig('base','http://localhost/');
 
-// 添加路由表
+// 注册组件
+// webcore.useComponent(components);
+
+// 使用路由
 webcore.useRouter(router);
 
 // 安装插件

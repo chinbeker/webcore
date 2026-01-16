@@ -9,6 +9,7 @@ export default class RouterService {
 
     constructor(){
         if (RouterService.instance){return RouterService.instance;}
+
         Object.freezeProp(Object.getPrototypeOf(Application.instance), "useRouter", function useRouter(router){
             RouterService.instance.use(router)
         });
@@ -92,6 +93,11 @@ export default class RouterService {
                 throw new URIError("Router base path invalid.")
             }
         }
+
+        // 给 router-view 添加默认样式
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync("router-view{box-sizing: border-box;display:block;overflow:auto;scrollbar-width:thin;scroll-behavior:smooth}");
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 
         // 监听地址栏变化
         if (this.mode === "hash"){

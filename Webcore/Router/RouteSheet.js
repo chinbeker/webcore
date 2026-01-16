@@ -1,3 +1,4 @@
+import ComponentService from "../Component/ComponentService.js";
 import ComponentBuilder from "../Component/ComponentBuilder.js";
 import RouteRule from "./RouteRule.js";
 import Route from "./Route.js";
@@ -78,7 +79,7 @@ export default class RouteSheet {
             }
             this.names.set(route.name, routerRoute);
         }
-        top.webcore.component.register(route.component);
+        ComponentService.instance.register(route.component);
         if (Object.hasOwn(route, "children") && Array.isArray(route.children)){
             for (const child of route.children){
                 this.set(child, path);
