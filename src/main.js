@@ -1,6 +1,6 @@
 // const webcore = window.webcore;
 import webcore from "../Webcore/App.js";
-import components from "./components/index.js"
+// import components from "./components/index.js"
 import router from "./router/index.js"
 
 // 导入插件
@@ -10,7 +10,7 @@ import SecurityService from "/Webcore/Security/SecurityService.js";
 webcore.setConfig('base','http://localhost/');
 
 // 注册组件
-webcore.useComponent(components);
+// webcore.useComponent(components);
 
 // 使用路由
 webcore.useRouter(router);

@@ -30,21 +30,11 @@ export default class ComponentBuilder extends HTMLElement {
         if (typeof this.create === "function"){this.create()}
 
         if (this.#builder.routing !== true){
-            this.#create();
-            if (this.#builder.template.url === null){
-                // 同步渲染组件
-                const root = this.#fragment();
-                if (typeof this.init === "function"){this.init()}
+            this.#create().then(root => {
+                if (typeof this.init === "function"){this.init();}
                 this.#build(root)
-            } else {
-                // 异步渲染组件
-                this.#fragmentAsync().then(root => {
-                    if (typeof this.init === "function"){this.init()}
-                    this.#build(root)
-                })
-            }
+            })
         }
-
     }
 
     // 访问器
@@ -127,15 +117,9 @@ export default class ComponentBuilder extends HTMLElement {
             if (view){view.clear();return view;}
             return null;
         }
-        let root = this.#root;
-        this.#views = new Map();
-        this.#create();
-        if (this.#builder.template.url === null){
-            root = this.#fragment();
-        } else {
-            root = await this.#fragmentAsync();
-        }
+        const root = await this.#create();
         if (typeof this.init === "function"){this.init()}
+        this.#views = new Map();
         const views = root.querySelectorAll("router-view");
         if (views.length > 0){
             for (let i = 0;i < views.length;i ++){
@@ -152,42 +136,25 @@ export default class ComponentBuilder extends HTMLElement {
     service(name) {return Object.hasOwn(this.#services, name) ? this.#services[name] : null;}
 
     // 私有方法
-    #create(){
+    async #create(){
         this.#shadow = this.attachShadow({ mode: this.#mode });
         this.#created = true;
+        // 加载 HTML
+        this.#root = await this.#builder.template.fragment();
+        this.#render = true;
 
         // 加载样式
         if (!this.#builder.styles.initial){
-            if (this.#builder.styles.url === null){
-                const style = this.#builder.styles.styleSheet();
-                this.#shadow.adoptedStyleSheets = style;
-            } else {
-                this.#builder.styles.styleSheetAsync().then(style=>{
-                    this.#shadow.adoptedStyleSheets = style;
-                });
-            }
+            const styleSheet = await this.#builder.styles.styleSheet();
+            this.#shadow.adoptedStyleSheets = styleSheet;
         }
 
         // 解析服务
         if (this.#inject.length > 0){
             this.#services = Application.instance.resolve(this.#inject);
         }
-    }
-
-    #fragment(){
-        // 加载 HTML
-        this.#root = this.#builder.template.fragment();
-        this.#render = true;
         return this.#root;
     }
-
-    async #fragmentAsync(){
-        // 加载 HTML
-        this.#root = await this.#builder.template.fragmentAsync();
-        this.#render = true;
-        return this.#root;
-    }
-
 
     // 执行组件逻辑后的挂载方法
     #build(root){

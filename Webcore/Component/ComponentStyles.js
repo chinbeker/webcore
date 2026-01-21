@@ -22,9 +22,18 @@ export default class ComponentStyles {
         }
     }
 
-    #create(){
+    async styleSheet(){
         if (this.#styleSheet === null){
-            if (this.#style === null){
+            if (this.#url !== null){
+                try {
+                    const style = await URL.loader(this.#url);
+                    this.#style = ComponentStyles.compress(style);
+                } catch  {
+                    throw new TypeError("Component style loading failed.");
+                }
+            }
+
+            if (String.isNullOrWhiteSpace(this.#style)){
                 this.#styleSheet = [...ComponentStyles.base];
             } else {
                 const sheet = new CSSStyleSheet();
@@ -33,24 +42,6 @@ export default class ComponentStyles {
             }
         }
         return this.#styleSheet;
-    }
-
-    styleSheet(){
-        return this.#create();
-    }
-
-    async styleSheetAsync(){
-        if (this.#styleSheet === null && this.#url !== null){
-            try {
-                const style = await URL.loader(this.#url);
-                this.#style = ComponentStyles.compress(style);
-                return this.#create();
-            } catch  {
-                throw new TypeError("Component style loading failed.");
-            }
-        } else {
-            return this.#create();
-        }
     }
 
     static compress(style){

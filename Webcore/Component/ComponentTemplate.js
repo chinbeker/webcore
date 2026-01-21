@@ -22,8 +22,17 @@ export default class ComponentTemplate {
         }
     }
 
-    #create(){
+    async fragment(){
         if (this.#fragment === null){
+            if (this.#url !== null){
+                try {
+                    const template = await URL.loader(this.#url);
+                    this.#html = ComponentTemplate.compress(template);
+                } catch {
+                    throw new TypeError("Component template loading failed.");
+                }
+            }
+
             if (String.isNullOrWhiteSpace(this.#html)){
                 this.#fragment = document.createDocumentFragment();
                 const root = document.createElement("div");
@@ -36,24 +45,6 @@ export default class ComponentTemplate {
             }
         }
         return this.#fragment.cloneNode(true);
-    }
-
-    fragment(){
-        return this.#create()
-    }
-
-    async fragmentAsync(){
-        if (this.#fragment === null && this.#url !== null){
-            try {
-                const template = await URL.loader(this.#url);
-                this.#html = ComponentTemplate.compress(template);
-                return this.#create();
-            } catch {
-                throw new TypeError("Component template loading failed.");
-            }
-        } else {
-            return this.#create();
-        }
     }
 
     static compress(html){return html.replace(/\n\s*/g, "").replace(/>\s+</g, "><").trim()}
