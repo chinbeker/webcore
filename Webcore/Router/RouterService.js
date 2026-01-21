@@ -1,5 +1,6 @@
 import Application from "../Application/Application.js";
 import Router from "./Router.js";
+import Route from "./Route.js";
 
 export default class RouterService {
 
@@ -96,13 +97,19 @@ export default class RouterService {
 
         // 给 router-view 添加默认样式
         const sheet = new CSSStyleSheet();
-        sheet.replaceSync("router-view{box-sizing: border-box;display:block;overflow:auto;scrollbar-width:thin;scroll-behavior:smooth}");
+        sheet.replaceSync("@layer reset,token,theme,framework,base,layout,component,page,utilitie,override;@layer reset{router-view{box-sizing: border-box;display:block;overflow:auto;scrollbar-width:thin;scroll-behavior:smooth}}");
         document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 
         // 监听地址栏变化
         if (this.mode === "hash"){
             top.onhashchange = function hashchange(event){
-                RouterService.instance.replace(location.hash.replace("#",""));
+                RouterService.router.to(
+                    Object.pure({
+                        from: new URL(event.oldURL).hash.replace("#",""),
+                        to: new URL(event.newURL).hash.replace("#",""),
+                        replace: true
+                    },false)
+                );
             }
         } else if (this.mode === "history"){
             top.onpopstate = function pathchange(event){

@@ -40,7 +40,7 @@ export default class HomeView extends webcore.component.builder {
 
     // 生命周期
     onConnected(){
-        // console.log("Home 组件已经挂载到页面")
+        console.log("Home 组件已经挂载到页面")
     }
 
     onAttributeChanged(attr, value, old){

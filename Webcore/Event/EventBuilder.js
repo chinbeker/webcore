@@ -18,7 +18,9 @@ export default class EventBuilder {
         Error.throwIfNotFunction(handler, "Event handler");
         event = event.trim();
         this.#handlers[event] = handler;
-        this.options[event] = Object.isObject(options) ? options : Object.pure();
+        if (options){
+            this.#options[event] = options;
+        }
         return this;
     }
 

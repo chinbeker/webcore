@@ -1,16 +1,16 @@
 export default class ComponentTemplate {
-    #href = null;
+    #url = null;
     #html = "<slot></slot>";
     #initial = true;
     #fragment = null;
 
     get initial(){return this.#initial;}
-    get href(){return this.#href;}
+    get url(){return this.#url;}
     get html(){return this.#html;}
 
-    set href(url){
+    set url(url){
         if (this.#initial){
-            this.#href = URL.create(url);
+            this.#url = URL.create(url);
             this.#initial = false;
         }
     }
@@ -22,25 +22,38 @@ export default class ComponentTemplate {
         }
     }
 
-    has(){
-        return !String.isNullOrWhiteSpace(this.#html) || this.#href !== null;
-    }
-
-    async fragment(){
+    #create(){
         if (this.#fragment === null){
-            if (this.#href !== null){
-                try {
-                    const template = await URL.loader(this.#href);
-                    this.#html = ComponentTemplate.compress(template);
-                } catch {
-                    throw new TypeError("Component template loading failed.");
-                }
+            if (String.isNullOrWhiteSpace(this.#html)){
+                this.#fragment = document.createDocumentFragment();
+                const root = document.createElement("div");
+                root.classList.add("root");
+                this.#fragment.append(root);
+            } else {
+                const fragment = document.createRange().createContextualFragment(this.#html);
+                fragment.querySelectorAll('script').forEach(script => script.remove());
+                this.#fragment = fragment;
             }
-            const fragment = document.createRange().createContextualFragment(this.#html);
-            fragment.querySelectorAll('script').forEach(script => script.remove());
-            this.#fragment = fragment;
         }
         return this.#fragment.cloneNode(true);
+    }
+
+    fragment(){
+        return this.#create()
+    }
+
+    async fragmentAsync(){
+        if (this.#fragment === null && this.#url !== null){
+            try {
+                const template = await URL.loader(this.#url);
+                this.#html = ComponentTemplate.compress(template);
+                return this.#create();
+            } catch {
+                throw new TypeError("Component template loading failed.");
+            }
+        } else {
+            return this.#create();
+        }
     }
 
     static compress(html){return html.replace(/\n\s*/g, "").replace(/>\s+</g, "><").trim()}

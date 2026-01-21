@@ -13,9 +13,9 @@ export default class ComponentBuilder extends HTMLElement {
     #shadow = null;
     #config = null;
     #builder = null;
-    #route = null;
     #views = null;
     #created = false;
+    #render = false;
 
     constructor(){
         super();
@@ -30,10 +30,19 @@ export default class ComponentBuilder extends HTMLElement {
         if (typeof this.create === "function"){this.create()}
 
         if (this.#builder.routing !== true){
-            this.#create().then(root => {
-                if (typeof this.init === "function"){this.init();}
+            this.#create();
+            if (this.#builder.template.url === null){
+                // 同步渲染组件
+                const root = this.#fragment();
+                if (typeof this.init === "function"){this.init()}
                 this.#build(root)
-            })
+            } else {
+                // 异步渲染组件
+                this.#fragmentAsync().then(root => {
+                    if (typeof this.init === "function"){this.init()}
+                    this.#build(root)
+                })
+            }
         }
 
     }
@@ -54,10 +63,10 @@ export default class ComponentBuilder extends HTMLElement {
             return this;
         }
         Error.throwIfNotString(html, "Component template");
-        if (!html.includes("<") && !html.includes(">")){
+        if (!String.isNullOrWhiteSpace(html) && !html.includes("<") && !html.includes(">")){
             try {
                 const url = new URL(html, ComponentService.instance.base);
-                this.#builder.template.href = url;
+                this.#builder.template.url = url;
             } catch  {
                 this.#builder.template.html = html;
             }
@@ -73,7 +82,7 @@ export default class ComponentBuilder extends HTMLElement {
         Error.throwIfNotString(styles, "Component style");
         if (styles.endsWith(".css") || (!styles.includes("{") && !styles.includes("}"))
         ){
-            this.#builder.styles.href = new URL(styles, ComponentService.instance.base);
+            this.#builder.styles.url = new URL(styles, ComponentService.instance.base);
         } else {
             this.#builder.styles.style = styles;
         }
@@ -98,8 +107,8 @@ export default class ComponentBuilder extends HTMLElement {
 
 
     // 声明周期事件
-    async connectedCallback(){
-        if (typeof this.onConnected === "function"){return this.onConnected();}
+    connectedCallback(){
+        if (this.#render && typeof this.onConnected === "function"){return this.onConnected();}
     }
     attributeChangedCallback(attr, old, value){
         if (typeof this.onAttributeChanged === "function"){return this.onAttributeChanged(attr, value, old);}
@@ -110,15 +119,23 @@ export default class ComponentBuilder extends HTMLElement {
     disconnectedCallback(){
         if (typeof this.onDisconnected === "function"){return this.onDisconnected();}
     }
+
+    // 路由接口
     async routeCallback(name){
         if (this.#created === true){
             const view = this.#views.get(name);
             if (view){view.clear();return view;}
             return null;
         }
-        const root = await this.#create();
-        if (typeof this.init === "function"){this.init()}
+        let root = this.#root;
         this.#views = new Map();
+        this.#create();
+        if (this.#builder.template.url === null){
+            root = this.#fragment();
+        } else {
+            root = await this.#fragmentAsync();
+        }
+        if (typeof this.init === "function"){this.init()}
         const views = root.querySelectorAll("router-view");
         if (views.length > 0){
             for (let i = 0;i < views.length;i ++){
@@ -135,30 +152,52 @@ export default class ComponentBuilder extends HTMLElement {
     service(name) {return Object.hasOwn(this.#services, name) ? this.#services[name] : null;}
 
     // 私有方法
-    async #create(){
+    #create(){
         this.#shadow = this.attachShadow({ mode: this.#mode });
         this.#created = true;
-        // 加载 HTML
-        if (this.#builder.template.has()) {
-            this.#root = await this.#builder.template.fragment();
-        }
+
         // 加载样式
         if (!this.#builder.styles.initial){
-            const styleSheet = await this.#builder.styles.styleSheet();
-            this.#shadow.adoptedStyleSheets = styleSheet;
+            if (this.#builder.styles.url === null){
+                const style = this.#builder.styles.styleSheet();
+                this.#shadow.adoptedStyleSheets = style;
+            } else {
+                this.#builder.styles.styleSheetAsync().then(style=>{
+                    this.#shadow.adoptedStyleSheets = style;
+                });
+            }
         }
+
         // 解析服务
         if (this.#inject.length > 0){
             this.#services = Application.instance.resolve(this.#inject);
         }
+    }
+
+    #fragment(){
+        // 加载 HTML
+        this.#root = this.#builder.template.fragment();
+        this.#render = true;
         return this.#root;
     }
+
+    async #fragmentAsync(){
+        // 加载 HTML
+        this.#root = await this.#builder.template.fragmentAsync();
+        this.#render = true;
+        return this.#root;
+    }
+
+
     // 执行组件逻辑后的挂载方法
-    async #build(root){
+    #build(root){
         const element = root.querySelector(".root");
         if (element) {this.#root = element} else {this.#root = root.firstElementChild;}
-        Application.instance.router.bind(root);
+        this.#root.classList.add("root");
+        Application?.instance?.router?.bind(root);
         this.#shadow.appendChild(root);
+        // 挂载钩子
+        if (typeof this.onConnected === "function"){return this.onConnected();}
     }
 
     static check(name){

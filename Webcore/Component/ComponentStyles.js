@@ -1,16 +1,16 @@
 export default class ComponentStyles {
-    #href = null;
+    #url = null;
     #style = null;
     #initial = true;
     #styleSheet = null;
 
     get initial(){return this.#initial;}
-    get href(){return this.#href;}
+    get url(){return this.#url;}
     get style(){return this.#style;}
 
-    set href(url){
+    set url(url){
         if (this.#initial){
-            this.#href = URL.create(url);;
+            this.#url = URL.create(url);;
             this.#initial = false;
         }
     }
@@ -22,21 +22,35 @@ export default class ComponentStyles {
         }
     }
 
-    async styleSheet(){
+    #create(){
         if (this.#styleSheet === null){
-            if (this.#style === null && this.#href !== null){
-                try {
-                    const style = await URL.loader(this.#href);
-                    this.#style = ComponentStyles.compress(style);
-                } catch  {
-                    throw new TypeError("Component style loading failed.");
-                }
+            if (this.#style === null){
+                this.#styleSheet = [...ComponentStyles.base];
+            } else {
+                const sheet = new CSSStyleSheet();
+                sheet.replaceSync(this.#style);
+                this.#styleSheet = [...ComponentStyles.base, sheet];
             }
-            const sheet = new CSSStyleSheet();
-            sheet.replaceSync(this.#style);
-            this.#styleSheet = [...ComponentStyles.base, sheet];
         }
         return this.#styleSheet;
+    }
+
+    styleSheet(){
+        return this.#create();
+    }
+
+    async styleSheetAsync(){
+        if (this.#styleSheet === null && this.#url !== null){
+            try {
+                const style = await URL.loader(this.#url);
+                this.#style = ComponentStyles.compress(style);
+                return this.#create();
+            } catch  {
+                throw new TypeError("Component style loading failed.");
+            }
+        } else {
+            return this.#create();
+        }
     }
 
     static compress(style){

@@ -50,53 +50,6 @@ export default class Router {
         return true;
     }
 
-    // 路由渲染
-    async #render(pathname, route, views, root, target){
-        if (views.length > 0){
-            try {
-                const results = await Promise.all(
-                    views.map(view => view.routeCallback(route.view))
-                );
-                const len = results.length-1;
-                if (len > 0){
-                    for (let i = 0;i < len;i ++){
-                        results[i].render(views[i+1]);
-                        this.scrollTo(results[i], views[i+1].position)
-                    }
-                }
-                results[len].render(target);
-                this.scrollTo(results[len], target.position)
-            } catch {
-                return false;
-            }
-        }
-        // 检查一级路由是否已经在DOM中，避免重复渲染
-        if (!this.view.contains(root)){
-            this.view.render(root);
-            this.scrollTo(this.view, root.position)
-        }
-        // 路由之后的回调
-        if (typeof target.onRouteAfter === "function"){
-            target.onRouteAfter(route);
-        }
-        this.#history(pathname, route);
-    }
-
-    // 地址栏改变
-    #history(pathname, route){
-        if (this.mode === "history"){
-            pathname = `${RouterService.instance.base}${pathname}`
-        } else {
-            pathname = `${RouterService.instance.base}/#${pathname}`;
-        }
-        if (route.replace){
-            top.history.replaceState(route, "", pathname)
-        } else {
-            top.history.pushState(route, "", pathname)
-        }
-        return true;
-    }
-
     // 路由入口
     async #routing(route){
         let routes = this.routes.get(route.from);
@@ -132,7 +85,7 @@ export default class Router {
                 if (!this.views.has(route.path)){
                     this.views.set(route.path, new component())
                 }
-                const view = this.views.get(route.path)
+                const view = this.views.get(route.path);
                 view.position = component.position;
                 views.push(view);
             } else {
@@ -162,6 +115,55 @@ export default class Router {
         }
         return true;
     }
+    // 路由渲染
+    async #render(pathname, route, views, root, target){
+        if (views.length > 0){
+            try {
+                const results = await Promise.all(
+                    views.map(view => view.routeCallback(route.view))
+                );
+                const len = results.length-1;
+                if (len > 0){
+                    for (let i = 0;i < len;i ++){
+                        results[i].render(views[i+1]);
+                        this.scrollTo(results[i], views[i+1].position)
+                    }
+                }
+                results[len].render(target);
+                this.scrollTo(results[len], target.position)
+            } catch {
+                return false;
+            }
+        }
+        // 检查一级路由是否已经在DOM中，避免重复渲染
+        if (!this.view.contains(root)){
+            this.view.render(root);
+        }
+        this.scrollTo(this.view, root.position);
+
+        // 路由之后的回调
+        if (typeof target.onRouteAfter === "function"){
+            target.onRouteAfter(route);
+        }
+        this.#history(pathname, route);
+    }
+
+    // 地址栏改变
+    #history(pathname, route){
+        if (this.mode === "history"){
+            pathname = `${RouterService.instance.base}${pathname}`
+        } else {
+            pathname = `${RouterService.instance.base}/#${pathname}`;
+        }
+        if (route.replace){
+            top.history.replaceState(route, "", pathname)
+        } else {
+            top.history.pushState(route, "", pathname)
+        }
+        return true;
+    }
+
+
 
     scrollTo(target, position){
         const smooth = getComputedStyle(target).scrollBehavior === "smooth";

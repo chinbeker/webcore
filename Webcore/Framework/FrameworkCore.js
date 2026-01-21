@@ -303,8 +303,9 @@ export default class FrameworkCore {
                 url = URL.create(url);
                 try {
                     const res = await fetch(url);
+                    if (!res.ok){return ""}
                     return await res.text();
-                } catch (error) {throw error;}
+                } catch {return "";}
             }
         );
 

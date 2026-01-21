@@ -1,8 +1,8 @@
 export default class HttpClient {
-    url = null;
-    baseUrl = null;
 
     constructor(config=null){
+        this.url = "";
+        this.baseUrl = location.origin;
         Object.freezeProp(this, "headers", Object.pure());
         Object.freezeProp(this, "payload", Object.pure());
         Object.freezeProp(this, "expand", Object.pure());
@@ -15,7 +15,7 @@ export default class HttpClient {
         Object.sealProp(this, "abortController", null);
         Object.sealProp(this, "ontimeout", (message)=>{console.info(message || "Request timeout.")});
         Object.sealProp(this, "onabort", (message)=>{console.info(message || "Request aborted.")});
-        // 检查 url
+
         if (!HttpClient.isKeyValuePair(config)){return this;}
 
         // 检查参数类型
@@ -25,6 +25,16 @@ export default class HttpClient {
                 if (Object.hasOwn(prop, "valid") && !prop.valid.includes(config[key])){throw new TypeError(`The ${key} is invalid.`)}
                 this[key] = config[key];
             }
+        }
+
+        // 检查URL
+        if (Object.hasOwn(config, "url")){
+            if (typeof config.url !== "string" && !(config.url instanceof URL)){
+                throw new URIError("URL invalid.")
+            }
+            const url = typeof config.url === "string" ? new URL(config.url, location.origin) : config.url;
+            this.url = url.href;
+            this.baseUrl = url.origin;
         }
 
         // 处理缓存
@@ -90,44 +100,42 @@ export default class HttpClient {
         }
     }
 
-    async get(url, payload=null, timeout=0, abort=false){
-        try {
-            url = this.getUrl(url, payload);
-            return await this.send(url, "GET", null, timeout, abort);
-        } catch (error) {throw error;}
+    async get(payload=null, timeout=0){
+        return await this.send(this.getUrl(payload), "GET", null, timeout);
     }
 
-    async post(url, payload, timeout=0, abort=false){
-        return await this.send(url, "POST", payload, timeout, abort);
+    async post(payload, timeout=0){
+        return await this.send(this.getUrl(), "POST", payload, timeout);
     }
 
-    async put(url, payload, timeout=0, abort=false){
-        return await this.send(url, "PUT", payload, timeout, abort);
+    async put(payload, timeout=0){
+        return await this.send(this.getUrl(), "PUT", payload, timeout);
     }
 
-    async delete(url, payload, timeout=0, abort=false){
-        return await this.send(url, "DELETE", payload, timeout, abort);
+    async delete(payload, timeout=0){
+        return await this.send(this.getUrl(), "DELETE", payload, timeout);
     }
 
 
-    getUrl(url, payload=null){
-        try {
-            url = String.toNotEmptyString(url, "URL", this.url)
-            const Url = URL.create(url, this.baseUrl);
-            payload = payload || this.payload;
-            if (HttpClient.isKeyValuePair(payload)){
-                for (const key of Object.keys(payload)){Url.searchParams.set(key, payload[key])}
+    getUrl(payload=null){
+        const url = new URL(this.url, this.baseUrl);
+        payload = payload || this.payload;
+        if (HttpClient.isKeyValuePair(payload)){
+            for (const key of Object.keys(payload)){
+                url.searchParams.set(key, payload[key])
             }
-            return Url;
-        } catch (error) {
-            throw error;
         }
+        return url;
     }
 
     // 核心请求方法
-    async send(url=null, method="GET", payload=null, timeout=0, abort=false){
+    async send(url=null, method="GET", payload=null, timeout=0){
         // ------------------------------- 检查 URL ---------------------------------
-        if (!(url instanceof URL)){url = this.getUrl(url);}
+        if (typeof url === "string"){
+            url = URL.create(url, this.baseUrl)
+        } else if (!(url instanceof URL)){
+            throw new URIError("URL invalid.");
+        }
         // ------------------------------- 检查缓存 ---------------------------------
         if (this.cache > 0 && HttpClient.cache.has(url.href)){
             return Promise.resolve(HttpClient.cache.get(url.href));

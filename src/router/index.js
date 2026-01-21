@@ -25,7 +25,6 @@ const router = {
                     component: Welcome,
                     meta: {title: '欢迎'}
                 },
-
                 {
                     path: "/helloworld",
                     name: "HelloWorld",

@@ -58,8 +58,12 @@ export default class EventService {
         try {
             if (builder instanceof EventBuilder){
                 EventService.handlers.set(builder.element, builder.handlers);
-                for (const type of Object.keys(builder.handlers)){
-                    builder.element.addEventListener(type, EventService.handler, builder.options[type]);
+                for (const event of Object.keys(builder.handlers)){
+                    if (Object.hasOwn(builder.options, event)){
+                        builder.element.addEventListener(event, EventService.handler, builder.options[event]);
+                    } else {
+                        builder.element.addEventListener(event, EventService.handler);
+                    }
                 }
             }
         } catch (error) {

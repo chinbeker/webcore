@@ -9,7 +9,7 @@ export default defineConfig({
       input: '/src/main.js',
       output: {
         name: 'WebCore',
-        entryFileNames: 'webcore.min.js',
+        entryFileNames: 'webcore.js',
         format: 'iife',
         compact: true,
       }
