@@ -6,15 +6,15 @@ export default class Route {
         Object.freezeProp(this, "replace", replace);
         if (typeof routing === "string"){
             Object.freezeProp(this, "to", routing);
-            this.setPath(routing);
+            this.parse(routing);
         } else if (Object.isObject(routing)){
             Error.throwIfNotHasOwn(routing, "to", "To");
-            this.setPath(routing.to);
             for (const key of Route.keys){
                 if (Object.hasOwn(routing, key)){
                     Object.freezeProp(this, key, routing[key])
                 }
             }
+            this.parse(routing.to);
         }
         if (!Object.hasOwn(this, "from")){
             if (mode === "hash"){
@@ -28,8 +28,17 @@ export default class Route {
         }
     }
 
-    setPath(routing){
-        const url = new URL(routing, location.origin);
+    parse(to){
+        const url = new URL(to, location.origin);
         Object.sealProp(this, "path", url.pathname);
+        if (url.searchParams.size > 0){
+            if (!Object.hasOwn(this, "params")){
+                Object.freezeProp(this, "params", Object.pure(Object.fromEntries(url.searchParams),false));
+            } else {
+                for (const [key, value] of Object.entries(url.searchParams)){
+                    this.params[key] = value
+                }
+            }
+        }
     }
 }

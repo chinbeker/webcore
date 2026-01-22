@@ -118,7 +118,7 @@ export default class HttpClient {
 
 
     getUrl(payload=null){
-        const url = new URL(this.url, this.baseUrl);
+        const url = this.url instanceof URL ? this.url : new URL(this.url, this.baseUrl);
         payload = payload || this.payload;
         if (HttpClient.isKeyValuePair(payload)){
             for (const key of Object.keys(payload)){

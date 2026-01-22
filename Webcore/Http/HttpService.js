@@ -50,8 +50,20 @@ export default class HttpService {
 
     create(config=null){return new HttpClient(config);}
 
-    async get(query, timeout){return this.default.get(query,timeout)}
-    async post(params, timeout){return this.default.post(params,timeout)}
-    async put(params, timeout){return this.default.put(params,timeout)}
-    async delete(params, timeout){return this.default.delete(params,timeout)}
+    async get(url, query, timeout){
+        this.default.url = url;
+        return this.default.get(query,timeout)
+    }
+    async post(url, params, timeout){
+        this.default.url = url;
+        return this.default.post(params,timeout)
+    }
+    async put(url, params, timeout){
+        this.default.url = url;
+        return this.default.put(params,timeout)
+    }
+    async delete(url, params, timeout){
+        this.default.url = url;
+        return this.default.delete(params,timeout)
+    }
 }

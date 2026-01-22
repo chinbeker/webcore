@@ -98,7 +98,7 @@ export default class Router {
 
         const root = views[0];
         const target = views.pop();
-        target.routeCallback(route.view);
+        await target.routeCallback(route.view);
 
         // 路由之前的回调
         if (typeof target.onRouteBefore === "function"){
@@ -153,7 +153,11 @@ export default class Router {
         if (this.mode === "history"){
             pathname = `${RouterService.instance.base}${pathname}`
         } else {
-            pathname = `${RouterService.instance.base}/#${pathname}`;
+            if (Object.isObject(route.params) && Object.keys(route.params).length > 0){
+                pathname = `${RouterService.instance.base}/#${pathname}?${new URLSearchParams(route.params).toString()}`;
+            } else {
+                pathname = `${RouterService.instance.base}/#${pathname}`;
+            }
         }
         if (route.replace){
             top.history.replaceState(route, "", pathname)
@@ -187,7 +191,15 @@ export default class Router {
                 this.replace(location.pathname.replace(RouterService.instance.base,""));
             }
         } else if (location.hash){
-            this.replace(location.hash.replace("#",""));
+            const index = location.hash.indexOf("?");
+            if (index > -1){
+                this.to({
+                    to: location.hash.replace("#",""),
+                    params: Object.pure(Object.fromEntries(new URLSearchParams(location.hash.slice(index+1))),false)
+                })
+            } else {
+                this.replace(location.hash.replace("#",""))
+            }
         } else {
             this.replace("/");
         }

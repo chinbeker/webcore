@@ -16,6 +16,7 @@ export default class ComponentBuilder extends HTMLElement {
     #views = null;
     #created = false;
     #render = false;
+    #loader = null;
 
     constructor(){
         super();
@@ -28,13 +29,11 @@ export default class ComponentBuilder extends HTMLElement {
         if (!Object.hasOwn(this.#builder, "styles")){this.#builder.styles = new ComponentStyles();}
 
         if (typeof this.create === "function"){this.create()}
-
-        if (this.#builder.routing !== true){
-            this.#create().then(root => {
-                if (typeof this.init === "function"){this.init();}
-                this.#build(root)
-            })
-        }
+        this.#loader = this.#create();
+        this.#loader.then(root => {
+            if (typeof this.init === "function"){this.init();}
+            this.#build(root);
+        })
     }
 
     // 访问器
@@ -100,8 +99,15 @@ export default class ComponentBuilder extends HTMLElement {
     connectedCallback(){
         if (this.#render && typeof this.onConnected === "function"){return this.onConnected();}
     }
-    attributeChangedCallback(attr, old, value){
-        if (typeof this.onAttributeChanged === "function"){return this.onAttributeChanged(attr, value, old);}
+    async attributeChangedCallback(attr, old, value){
+        if (this.#created && typeof this.onAttributeChanged === "function"){
+            if (this.#render){
+                return this.onAttributeChanged(attr, value, old);
+            } else {
+                await this.#loader;
+                return this.onAttributeChanged(attr, value, old);
+            }
+        }
     }
     adoptedCallback(){
         if (typeof this.onAdopted === "function"){return this.onAdopted();}
@@ -112,23 +118,20 @@ export default class ComponentBuilder extends HTMLElement {
 
     // 路由接口
     async routeCallback(name){
-        if (this.#created === true){
-            const view = this.#views.get(name);
-            if (view){view.clear();return view;}
-            return null;
-        }
-        const root = await this.#create();
-        if (typeof this.init === "function"){this.init()}
-        this.#views = new Map();
-        const views = root.querySelectorAll("router-view");
-        if (views.length > 0){
-            for (let i = 0;i < views.length;i ++){
-                const name = views[i].hasAttribute("name") ? views[i].getAttribute("name") : "default";
-                this.#views.set(name, views[i])
+        if (this.#render === true){
+            if (this.#views !== null){
+                const view = this.#views.get(name);
+                if (view){
+                    view.clear();
+                    return view;
+                }
             }
+            return null;
+        } else {
+            await this.#loader;
+            if (this.#views === null){return null;}
+            return this.#views.get(name);
         }
-        this.#build(root);
-        return this.#views.get(name);
     }
 
     // 公共方法
@@ -139,9 +142,6 @@ export default class ComponentBuilder extends HTMLElement {
     async #create(){
         this.#shadow = this.attachShadow({ mode: this.#mode });
         this.#created = true;
-        // 加载 HTML
-        this.#root = await this.#builder.template.fragment();
-        this.#render = true;
 
         // 加载样式
         if (!this.#builder.styles.initial){
@@ -149,22 +149,36 @@ export default class ComponentBuilder extends HTMLElement {
             this.#shadow.adoptedStyleSheets = styleSheet;
         }
 
+        // 加载 HTML
+        this.#root = await this.#builder.template.fragment();
+
         // 解析服务
         if (this.#inject.length > 0){
             this.#services = Application.instance.resolve(this.#inject);
+        }
+
+        const views = this.#root.querySelectorAll("router-view");
+        if (views.length > 0){
+            this.#views = new Map();
+            for (let i = 0;i < views.length;i ++){
+                const name = views[i].hasAttribute("name") ? views[i].getAttribute("name") : "default";
+                this.#views.set(name, views[i])
+            }
         }
         return this.#root;
     }
 
     // 执行组件逻辑后的挂载方法
     #build(root){
+        this.#render = true;this.#loader = null;
         const element = root.querySelector(".root");
         if (element) {this.#root = element} else {this.#root = root.firstElementChild;}
         this.#root.classList.add("root");
         Application?.instance?.router?.bind(root);
         this.#shadow.appendChild(root);
-        // 挂载钩子
-        if (typeof this.onConnected === "function"){return this.onConnected();}
+
+        // 首次挂载后钩子
+        if (typeof this.onMounted === "function"){return this.onMounted();}
     }
 
     static check(name){
