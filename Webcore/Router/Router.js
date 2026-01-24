@@ -1,3 +1,5 @@
+import ComponentService from "../Component/ComponentService.js";
+
 import RouterService from "./RouterService.js";
 import RouteSheet from "./RouteSheet.js";
 import Route from "./Route.js";
@@ -41,17 +43,27 @@ export default class Router {
     }
 
     push(to){
-        this.#routing(new Route(this.mode, to, false));
+        this.#navigate(new Route(this.mode, to, false));
         return true;
     }
 
     replace(to){
-        this.#routing(new Route(this.mode, to, true));
+        this.#navigate(new Route(this.mode, to, true));
         return true;
     }
 
     // 路由入口
-    async #routing(route){
+    async #navigate(route){
+        // 先执行全局路由守卫
+        if (typeof RouterService.beforeEach === "function"){
+            const next = await RouterService.beforeEach(route);
+            if (next === false){
+                return false;
+            } else if (Object.isObject(next) && !String.isNullOrWhiteSpace(next.to)){
+                return this.to(next);
+            }
+        }
+
         let routes = this.routes.get(route.from);
 
         // 保存跳转前的滚动位置
@@ -79,8 +91,10 @@ export default class Router {
 
         // 拿到所有组件实例
         for (const route of routes){
+            if (typeof route.component === "string"){
+                route.component = await ComponentService.instance.load(route.component)
+            }
             const component = route.component;
-            component.routing = true;
             if (route.cache === true){
                 if (!this.views.has(route.path)){
                     this.views.set(route.path, new component())
@@ -93,7 +107,6 @@ export default class Router {
                 view.position = Object.pure({left:0,top:0},false);
                 views.push(view);
             }
-            component.routing = false;
         }
 
         const root = views[0];
@@ -101,8 +114,8 @@ export default class Router {
         await target.routeCallback(route.view);
 
         // 路由之前的回调
-        if (typeof target.onRouteBefore === "function"){
-            const next = await target.onRouteBefore(route);
+        if (typeof target.beforeRouteCallback === "function"){
+            const next = await target.beforeRouteCallback(route);
             if (next === false){
                 return false;
             } else if (Object.isObject(next) && !String.isNullOrWhiteSpace(next.to)){
@@ -115,6 +128,7 @@ export default class Router {
         }
         return true;
     }
+
     // 路由渲染
     async #render(pathname, route, views, root, target){
         if (views.length > 0){
@@ -142,8 +156,8 @@ export default class Router {
         this.scrollTo(this.view, root.position);
 
         // 路由之后的回调
-        if (typeof target.onRouteAfter === "function"){
-            target.onRouteAfter(route);
+        if (typeof target.onRouted === "function"){
+            target.onRouted(route);
         }
         this.#history(pathname, route);
     }
@@ -166,8 +180,6 @@ export default class Router {
         }
         return true;
     }
-
-
 
     scrollTo(target, position){
         const smooth = getComputedStyle(target).scrollBehavior === "smooth";
@@ -195,6 +207,7 @@ export default class Router {
             if (index > -1){
                 this.to({
                     to: location.hash.replace("#",""),
+                    replace: true,
                     params: Object.pure(Object.fromEntries(new URLSearchParams(location.hash.slice(index+1))),false)
                 })
             } else {

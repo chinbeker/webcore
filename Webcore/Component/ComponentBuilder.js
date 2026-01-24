@@ -29,11 +29,8 @@ export default class ComponentBuilder extends HTMLElement {
         if (!Object.hasOwn(this.#builder, "styles")){this.#builder.styles = new ComponentStyles();}
 
         if (typeof this.create === "function"){this.create()}
-        this.#loader = this.#create();
-        this.#loader.then(root => {
-            if (typeof this.init === "function"){this.init();}
-            this.#build(root);
-        })
+        this.#loader = this.#initialize();
+        this.#loader.then(root => {this.#build(root)})
     }
 
     // 访问器
@@ -133,13 +130,23 @@ export default class ComponentBuilder extends HTMLElement {
             return this.#views.get(name);
         }
     }
+    async beforeRouteCallback(route){
+        if (typeof this.onBeforeRoute !== "function"){return true;}
+        if (this.#render === true){
+            return this.onBeforeRoute(route);
+        } else {
+            await this.#loader;
+            return this.onBeforeRoute(route);
+        }
+    }
+
 
     // 公共方法
     selector(selector){return this.#root.querySelector(selector)}
     service(name) {return Object.hasOwn(this.#services, name) ? this.#services[name] : null;}
 
     // 私有方法
-    async #create(){
+    async #initialize(){
         this.#shadow = this.attachShadow({ mode: this.#mode });
         this.#created = true;
 
@@ -157,6 +164,7 @@ export default class ComponentBuilder extends HTMLElement {
             this.#services = Application.instance.resolve(this.#inject);
         }
 
+        // 获取 router-view
         const views = this.#root.querySelectorAll("router-view");
         if (views.length > 0){
             this.#views = new Map();
@@ -165,12 +173,19 @@ export default class ComponentBuilder extends HTMLElement {
                 this.#views.set(name, views[i])
             }
         }
+
+        // 执行组件初始化代码
+        if (typeof this.onCreated === "function"){this.onCreated()}
+        this.#render = true;
         return this.#root;
     }
 
     // 执行组件逻辑后的挂载方法
     #build(root){
-        this.#render = true;this.#loader = null;
+        // 挂载前钩子
+        if (typeof this.onBeforeMount === "function"){this.onBeforeMount()}
+
+        this.#loader = null;
         const element = root.querySelector(".root");
         if (element) {this.#root = element} else {this.#root = root.firstElementChild;}
         this.#root.classList.add("root");
@@ -178,7 +193,7 @@ export default class ComponentBuilder extends HTMLElement {
         this.#shadow.appendChild(root);
 
         // 首次挂载后钩子
-        if (typeof this.onMounted === "function"){return this.onMounted();}
+        if (typeof this.onMounted === "function"){this.onMounted();}
     }
 
     static check(name){

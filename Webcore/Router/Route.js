@@ -35,7 +35,7 @@ export default class Route {
             if (!Object.hasOwn(this, "params")){
                 Object.freezeProp(this, "params", Object.pure(Object.fromEntries(url.searchParams),false));
             } else {
-                for (const [key, value] of Object.entries(url.searchParams)){
+                for (const [key, value] of url.searchParams.entries()){
                     this.params[key] = value
                 }
             }

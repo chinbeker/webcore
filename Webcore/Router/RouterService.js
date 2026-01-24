@@ -11,6 +11,9 @@ export default class RouterService {
     constructor(){
         if (RouterService.instance){return RouterService.instance;}
 
+        Object.sealProp(RouterService, "beforeEach", null);
+        Object.sealProp(RouterService, "afterEach", null);
+
         Object.freezeProp(Object.getPrototypeOf(Application.instance), "useRouter", function useRouter(router){
             RouterService.instance.use(router)
         });
@@ -181,5 +184,10 @@ export default class RouterService {
             return true;
         }
         return false;
+    }
+
+    beforeEach(func){
+        Error.throwIfNotFunction(func);
+        RouterService.beforeEach = func;
     }
 }

@@ -65,8 +65,11 @@ export default class RouteSheet {
         }
         Error.throwIfNotHasOwn(route, "path", "Route");
         Error.throwIfNotHasOwn(route, "component", "Route");
-        if (Object.getPrototypeOf(route.component) !== ComponentBuilder){
-            throw new Error('The component is invalid and is not a "webcore" component.');
+        if (typeof route.component !== "string" && typeof route.component !== "function"){
+            throw new TypeError('Component invalid.');
+        } else if (typeof route.component === "function" &&
+            Object.getPrototypeOf(route.component) !== ComponentBuilder){
+            throw new TypeError('The component is invalid and is not a "webcore" component.');
         }
         const path = `${base}${String.toNotEmptyString(route.path)}`;
         route.path = path;
@@ -79,7 +82,9 @@ export default class RouteSheet {
             }
             this.names.set(route.name, routerRoute);
         }
-        ComponentService.instance.register(route.component);
+        if (Object.getPrototypeOf(route.component) === ComponentBuilder){
+            ComponentService.instance.register(route.component);
+        }
         if (Object.hasOwn(route, "children") && Array.isArray(route.children)){
             for (const child of route.children){
                 this.set(child, path);

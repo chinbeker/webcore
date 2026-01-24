@@ -1,10 +1,8 @@
 export default class HelloWorld extends webcore.component.builder {
-    static tag = 'hello-world';
-    static get observedAttributes() {return ['content'];}
 
-    constructor(){
-        super();
-    }
+    static tag = 'hello-world';
+
+    // static observedAttributes = ['content'];
 
     // 创建组件
     create(){
@@ -37,12 +35,8 @@ export default class HelloWorld extends webcore.component.builder {
         })
     }
 
-    // 初始化（组件逻辑）
-    init(){
-        this.render();
-    }
-
-    render(){
+    // 生命周期钩子
+    onCreated(){
         const event = this.service('event');
         const p = this.selector('p');
 
@@ -51,11 +45,24 @@ export default class HelloWorld extends webcore.component.builder {
         ).bind();
     }
 
-    // 生命周期
-    onConnected(){
-        // console.log("Hello World 组件已经挂载到页面")
+    onBeforeMount(){
+
     }
 
+    onConnected(){
+
+    }
+
+    onMounted(){
+
+    }
+
+    onDisconnected(){
+
+    }
+
+
+    // 其他原生组件钩子
     onAttributeChanged(attr, value, old){
 
     }
@@ -64,16 +71,13 @@ export default class HelloWorld extends webcore.component.builder {
 
     }
 
-    onDisconnected(){
-        // console.log("Hello World 组件已经卸载")
-    }
 
-    // 路由触发事件
-    onRouteBefore(route){
+    // 路由钩子
+    onBeforeRoute(route){
         return true;
     }
 
-    onRouteAfter(route){
+    onRouted(route){
 
     }
 }

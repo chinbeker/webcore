@@ -1,11 +1,11 @@
 export default class Welcome extends webcore.component.builder {
 
     static tag = 'view-welcome';                         // 组件标签名称（如果省略前缀，会自动添加core-前缀，最终标签名为 core-welcome ）
-    static get observedAttributes() {return ['content'];}                  // 设置要监听元素的哪些属性（这是原生API，格式不能变）
+    static observedAttributes = ['content'];                 // 设置要监听元素的哪些属性（这是原生API，格式不能变）
 
-    constructor(){
-        super();
-    }
+    // constructor(){
+    //     super();
+    // }
 
     // 组件第一步，必须使用 create 方法，设置初始模板或样式等。（可链式调用）
     create(){
@@ -16,7 +16,7 @@ export default class Welcome extends webcore.component.builder {
     }
 
     // 组件初始化
-    init(){
+    onCreated(){
         // 自己写的组件逻辑，可以在这里依次调用。（这个没有框架约定或限制了，自己随意发挥了）
         this.hook();
     }
@@ -103,11 +103,11 @@ export default class Welcome extends webcore.component.builder {
     }
 
     // 路由触发事件
-    onRouteBefore(route){
+    onBeforeRoute(route){
         return true;
     }
 
-    onRouteAfter(route){
+    onRouted(route){
 
     }
 }

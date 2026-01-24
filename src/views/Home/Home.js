@@ -3,9 +3,9 @@ import Welcome from "/src/views/Welcome/welcome.js";
 export default class HomeView extends webcore.component.builder {
     static tag = 'view-home';
 
-    constructor(){
-        super();
-    }
+    // constructor(){
+    //     super();
+    // }
 
     create(){
         this.styles('/src/views/Home/Home.css')
@@ -14,7 +14,7 @@ export default class HomeView extends webcore.component.builder {
         .inject(['event', 'http', 'router', 'cache', 'reactive', 'text', 'viewport'])
     }
 
-    init(){
+    onCreated(){
         this.hook();
 
         // this.render();
@@ -56,11 +56,11 @@ export default class HomeView extends webcore.component.builder {
     }
 
     // 路由触发事件
-    onRouteBefore(route){
+    onBeforeRoute(route){
         return true;
     }
 
-    onRouteAfter(route){
+    onRouted(route){
 
     }
 }

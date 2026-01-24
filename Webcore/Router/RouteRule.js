@@ -5,7 +5,7 @@ export default class RouteRule {
         if (Object.isObject(route)){
             for (const key of RouteRule.keys){
                 if (Object.hasOwn(route,key)){
-                    Object.freezeProp(this, key, route[key]);
+                    Object.sealProp(this, key, route[key]);
                 }
             }
             if (!Object.hasOwn(this, "cache")){

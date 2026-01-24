@@ -62,9 +62,6 @@ export default class ComponentService {
         } else {
             tag = ComponentBuilder.check(tag);
         }
-        // if (this.#components.has(tag)) {
-        //     throw new Error(`Component "${tag}" is already registered, skipping.`);
-        // }
         if (!this.#components.has(tag)){
             try {
                 customElements.define(tag, component);
@@ -93,7 +90,11 @@ export default class ComponentService {
     }
 
     use(components){
-        this.registerAll(components);
+        if (Object.getPrototypeOf(components) === ComponentBuilder){
+            this.register(components);
+        } else {
+            this.registerAll(components);
+        }
         return this;
     }
 
