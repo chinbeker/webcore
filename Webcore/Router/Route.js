@@ -1,5 +1,5 @@
 export default class Route {
-    static keys = ["from", "to", "name", "params", "meta", "view"]
+    static keys = ["from", "to", "name", "params", "meta", "view", "link"]
     constructor(mode, routing, replace=false){
         Error.throwIfNull(routing, "Routing");
         Object.freezeProp(this, "mode", mode);
@@ -33,7 +33,7 @@ export default class Route {
         Object.sealProp(this, "path", url.pathname);
         if (url.searchParams.size > 0){
             if (!Object.hasOwn(this, "params")){
-                Object.freezeProp(this, "params", Object.pure(Object.fromEntries(url.searchParams),false));
+                Object.freezeProp(this, "params", Object.pure(Object.fromEntries(url.searchParams)));
             } else {
                 for (const [key, value] of url.searchParams.entries()){
                     this.params[key] = value

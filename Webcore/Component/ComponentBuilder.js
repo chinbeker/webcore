@@ -30,7 +30,20 @@ export default class ComponentBuilder extends HTMLElement {
 
         if (typeof this.create === "function"){this.create()}
         this.#loader = this.#initialize();
-        this.#loader.then(root => {this.#build(root)})
+
+        if (this.#builder.routing !== true){
+            this.#loader.then(root => {
+                if (typeof this.onCreated === "function" && typeof this.onBeforeMount === "function"){
+                    Promise.resolve(this.onCreated()).then(
+                        ()=>Promise.resolve(this.onBeforeMount())
+                    ).then(()=>this.#build(root))
+                } else if (typeof this.onCreated === "function"){
+                    Promise.resolve(this.onCreated()).then(this.#build(root))
+                } else if (typeof this.onBeforeMount === "function") {
+                    Promise.resolve(this.onBeforeMount()).then(()=>this.#build(root))
+                } else {this.#build(root)}
+            });
+        }
     }
 
     // 访问器
@@ -45,33 +58,13 @@ export default class ComponentBuilder extends HTMLElement {
 
 
     template(html) {
-        if (this.#builder.template.initial === false){
-            return this;
-        }
-        Error.throwIfNotString(html, "Component template");
-        if (!String.isNullOrWhiteSpace(html) && !html.includes("<") && !html.includes(">")){
-            try {
-                const url = new URL(html, ComponentService.instance.base);
-                this.#builder.template.url = url;
-            } catch  {
-                this.#builder.template.html = html;
-            }
-        } else {
-            this.#builder.template.html = html;
-        }
+        if (this.#builder.template.created === true){return this;}
+        this.#builder.template.html = html;
         return this;
     }
     styles(styles) {
-        if (this.#builder.styles.initial === false){
-            return this;
-        }
-        Error.throwIfNotString(styles, "Component style");
-        if (styles.endsWith(".css") || (!styles.includes("{") && !styles.includes("}"))
-        ){
-            this.#builder.styles.url = new URL(styles, ComponentService.instance.base);
-        } else {
-            this.#builder.styles.style = styles;
-        }
+        if (this.#builder.styles.created === true){return this;}
+        this.#builder.styles.style = styles;
         return this;
     }
     mode(shadowMode = "open") {
@@ -125,23 +118,45 @@ export default class ComponentBuilder extends HTMLElement {
             }
             return null;
         } else {
-            await this.#loader;
-            if (this.#views === null){return null;}
-            return this.#views.get(name);
+            const root = await this.#loader;
+            if (typeof this.onCreated === "function"){
+                await Promise.resolve(this.onCreated());
+            }
+            if (typeof this.onBeforeMount === "function"){
+                await Promise.resolve(this.onBeforeMount());
+            }
+            this.#build(root);
+            return this.#views.get(name) || null;
         }
     }
+
     async beforeRouteCallback(route){
-        if (typeof this.onBeforeRoute !== "function"){return true;}
         if (this.#render === true){
-            return this.onBeforeRoute(route);
+            if (typeof this.onBeforeRoute !== "function"){return true;}
+            return await Promise.resolve(this.onBeforeRoute(route));
         } else {
-            await this.#loader;
-            return this.onBeforeRoute(route);
+            const root = await this.#loader;
+            let next = true;
+
+            if (typeof this.onCreated === "function"){
+                await Promise.resolve(this.onCreated());
+            }
+            if (typeof this.onBeforeRoute === "function"){
+                next = await Promise.resolve(this.onBeforeRoute(route));
+            }
+            if (next === true){
+                if (typeof this.onBeforeMount === "function"){
+                    await Promise.resolve(this.onBeforeMount());
+                }
+                this.#build(root);
+            }
+            return next;
         }
     }
 
 
     // 公共方法
+    querySelector(selector){return this.#root.querySelector(selector)}
     selector(selector){return this.#root.querySelector(selector)}
     service(name) {return Object.hasOwn(this.#services, name) ? this.#services[name] : null;}
 
@@ -151,21 +166,26 @@ export default class ComponentBuilder extends HTMLElement {
         this.#created = true;
 
         // 加载样式
-        if (!this.#builder.styles.initial){
-            const styleSheet = await this.#builder.styles.styleSheet();
+        if (this.#builder.styles.has){
+            const styleSheet = await this.#builder.styles.getStyleSheet();
             this.#shadow.adoptedStyleSheets = styleSheet;
         }
 
         // 加载 HTML
-        this.#root = await this.#builder.template.fragment();
+        this.#root = await this.#builder.template.getFragment();
 
         // 解析服务
         if (this.#inject.length > 0){
             this.#services = Application.instance.resolve(this.#inject);
         }
 
+        return this.#root;
+    }
+
+    // 执行组件逻辑后的挂载方法
+    #build(root){
         // 获取 router-view
-        const views = this.#root.querySelectorAll("router-view");
+        const views = root.querySelectorAll("router-view");
         if (views.length > 0){
             this.#views = new Map();
             for (let i = 0;i < views.length;i ++){
@@ -173,22 +193,11 @@ export default class ComponentBuilder extends HTMLElement {
                 this.#views.set(name, views[i])
             }
         }
-
-        // 执行组件初始化代码
-        if (typeof this.onCreated === "function"){this.onCreated()}
         this.#render = true;
-        return this.#root;
-    }
-
-    // 执行组件逻辑后的挂载方法
-    #build(root){
-        // 挂载前钩子
-        if (typeof this.onBeforeMount === "function"){this.onBeforeMount()}
-
         this.#loader = null;
+
         const element = root.querySelector(".root");
         if (element) {this.#root = element} else {this.#root = root.firstElementChild;}
-        this.#root.classList.add("root");
         Application?.instance?.router?.bind(root);
         this.#shadow.appendChild(root);
 

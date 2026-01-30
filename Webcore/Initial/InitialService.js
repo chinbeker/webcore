@@ -7,7 +7,7 @@ export default class InitialService {
     constructor(){
         if (InitialService.instance){return InitialService.instance;}
         Object.sealProp(this, "executed", false);
-        this.handlers = Object.pure({"open":null, "loaded":null}, false)
+        this.handlers = Object.pure({"open":null, "loaded":null})
 
         Object.freezeProp(InitialService, "instance", this);
         Object.freeze(InitialService);

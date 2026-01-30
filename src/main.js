@@ -10,7 +10,7 @@ import SecurityService from "/Webcore/Security/SecurityService.js";
 // Configuration 配置
 webcore.setConfig('base','http://localhost/');
 
-// 注册组件
+// 注册全局组件
 // webcore.useComponent(components);
 
 // 使用路由

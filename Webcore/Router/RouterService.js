@@ -111,7 +111,7 @@ export default class RouterService {
                         from: new URL(event.oldURL).hash.replace("#",""),
                         to: new URL(event.newURL).hash.replace("#",""),
                         replace: true
-                    },false)
+                    })
                 );
             }
         } else if (this.mode === "history"){
@@ -140,7 +140,8 @@ export default class RouterService {
                         to: target.getAttribute("to"),
                         params: Object.pure(),
                         replace: target.hasAttribute("replace") ? true : false,
-                    }, false);
+                        link: target
+                    });
                     // 指定视图名称
                     if (target.hasAttribute("name")){
                         routing.view = target.getAttribute("name")

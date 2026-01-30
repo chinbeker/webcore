@@ -9,7 +9,7 @@ export default class HttpClient {
         Object.sealProp(this, "cache", 0);
         Object.sealProp(this, "timeout", 0);
         Object.sealProp(this, "abort", false);
-        Object.sealProp(this, "parse", "text");
+        Object.sealProp(this, "parse", "json");
         Object.sealProp(this, "encoding", "utf-8");
         Object.sealProp(this, "timeoutId", null);
         Object.sealProp(this, "abortController", null);

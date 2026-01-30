@@ -4,7 +4,6 @@ export default class ViewportService {
     static #instance = null;
 
     static singleton = true;
-    static system = true;
     static serviceName = "viewport";
 
     constructor(){

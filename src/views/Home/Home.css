@@ -18,9 +18,12 @@ a {
     font-size: 1.8em;
     color: white;
     line-height: 1.8em;
-    background-color: blue;
     border-radius: 0.15em;
+    background-color: rgb(238, 85, 58);
 }
 a:hover {
     background-color: blueviolet;
+}
+a.active {
+    background-color: rgb(50, 50, 218);
 }

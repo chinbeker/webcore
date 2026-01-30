@@ -12,9 +12,9 @@ export default class RouteRule {
                 Object.freezeProp(this, "cache", false);
             }
             if (Object.hasOwn(this, "params") && Object.isObject(this.params)){
-                Object.pure(this.params, false);
+                Object.pure(this.params);
                 for (const value of Object.values(this.params)){
-                    Object.pure(value, false);
+                    Object.pure(value);
                 }
             }
         }

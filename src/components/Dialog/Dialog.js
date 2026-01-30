@@ -111,9 +111,9 @@ button[value="false"] {color: black;background-color: rgb(223, 223, 223);}
     this.state.confirm = false;
     this.resolve = null;
 
-    this.element.main = this.selector('.main');
-    this.element.header = this.selector('header');
-    this.element.content = this.selector('p');
+    this.element.main = this.querySelector('.main');
+    this.element.header = this.querySelector('header');
+    this.element.content = this.querySelector('p');
 
     const label = document.createElement("label");
     const span = document.createElement("span");
@@ -130,7 +130,7 @@ button[value="false"] {color: black;background-color: rgb(223, 223, 223);}
     this.element.input = input;
     this.element.label = label;
 
-    const footer = this.selector('footer');
+    const footer = this.querySelector('footer');
     this.element.footer = footer;
 
     this.button = Object.create(null);

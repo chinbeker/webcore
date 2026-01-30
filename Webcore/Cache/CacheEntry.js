@@ -20,7 +20,7 @@ export default class CacheEntry {
         this.#options = Object.pure({
             sliding : 0,
             absolute : 0,
-        }, false);
+        });
 
         if (Object.isObject(options)){
             for (const key of Object.keys(this.#options)){

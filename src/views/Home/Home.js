@@ -1,54 +1,28 @@
-import Welcome from "/src/views/Welcome/welcome.js";
-
 export default class HomeView extends webcore.component.builder {
     static tag = 'view-home';
-
-    // constructor(){
-    //     super();
-    // }
 
     create(){
         this.styles('/src/views/Home/Home.css')
         .template('/src/views/Home/Home.html')
         .mode('closed')
-        .inject(['event', 'http', 'router', 'cache', 'reactive', 'text', 'viewport'])
+        .inject(['event'])
     }
-
-    onCreated(){
-        this.hook();
-
-        // this.render();
-        // console.dir(this);
-    }
-
-    hook(){
-        const {event, router} = this.services;
-        // this.element.router = this.selector('router-view')
-
-        // event.select(this.selector('a')).click(()=>{
-        //     router.push('/home/welcome');
-        // }).bind();
-
-
-    }
-
-    render(params){
-        // this.element.router.render(params)
-    }
-
-
 
     // 生命周期
+    onCreated(){
+        // console.log("onCreated")
+    }
+
+    onBeforeMount(){
+        // console.log("onBeforeMount")
+    }
+
+    onMounted(){
+        // console.log("onMounted")
+    }
+
     onConnected(){
-        console.log("Home 组件已经挂载到页面")
-    }
-
-    onAttributeChanged(attr, value, old){
-
-    }
-
-    onAdopted(){
-
+        // console.log("Home 组件已经挂载到页面")
     }
 
     onDisconnected(){
@@ -57,6 +31,8 @@ export default class HomeView extends webcore.component.builder {
 
     // 路由触发事件
     onBeforeRoute(route){
+        // console.log("onBeforeRoute")
+        // console.log(route)
         return true;
     }
 

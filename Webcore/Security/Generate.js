@@ -1,9 +1,6 @@
 export default class Generate {
-    static #instance = null;
-    constructor(){
-        if (Generate.#instance){return Generate.#instance;}
-        Generate.#instance = this;
-    }
+    constructor(){}
+
     // 生成加密安全的随机字节
     randomBytes(length) {
         const array = new Uint8Array(length);
@@ -11,10 +8,23 @@ export default class Generate {
         return array;
     }
 
+    randomKey(length = 32) {
+        const bytes = this.randomBytes(length);
+        return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
+    }
+
+    salt(length = 16) {
+        return this.randomKey(length);
+    }
+
+    randomBase64Key(length = 32) {
+        const bytes = this.randomBytes(length);
+        return btoa(String.fromCharCode(...bytes));
+    }
+
     // 生成安全的随机ID
     secureId(length = 16) {
-        const bytes = this.randomBytes(length);
-        return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
+        return this.randomKey(length);
     }
 
     // 生成URL安全的随机字符串
@@ -38,16 +48,6 @@ export default class Generate {
         return captcha;
     }
 
-    randomKey(length = 32) {
-        const bytes = this.randomBytes(length);
-        return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
-    }
-
-    randomBase64Key(length = 32) {
-        const bytes = this.randomBytes(length);
-        return btoa(String.fromCharCode(...bytes));
-    }
-
     // 生成数字验证码
     numericCode(digits = 6) {
         let code = "";
@@ -64,9 +64,8 @@ export default class Generate {
     // 生成UUID
     uuid() {
         const bytes = this.randomBytes(16);
-        // UUID格式: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-        bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
-        bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
         const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, "0"));
         return [
             hex.slice(0, 4).join(""),

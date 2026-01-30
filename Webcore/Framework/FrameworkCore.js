@@ -64,7 +64,7 @@ export default class FrameworkCore {
 
         // 返回没有原型的纯净 Object 对象（一般用于存储数据）
         Object.freezeProp(Object, "pure",
-            function pure(target = null, clone = true){
+            function pure(target = null, clone = false){
                 if (!Object.isObject(target)){return Object.create(null);}
                 if (!Object.hasPrototype(target)){return target;}
                 if (clone === true){

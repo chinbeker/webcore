@@ -1,24 +1,21 @@
 export default class Welcome extends webcore.component.builder {
 
-    static tag = 'view-welcome';                         // 组件标签名称（如果省略前缀，会自动添加core-前缀，最终标签名为 core-welcome ）
+    static tag = 'view-welcome';                      // 组件标签名称（如果省略前缀，会自动添加core-前缀，最终标签名为 core-welcome ）
     static observedAttributes = ['content'];                 // 设置要监听元素的哪些属性（这是原生API，格式不能变）
-
-    // constructor(){
-    //     super();
-    // }
 
     // 组件第一步，必须使用 create 方法，设置初始模板或样式等。（可链式调用）
     create(){
-        this.template('/src/views/welcome/welcome.html')                // 设置初始模板
-        .styles('/src/views/welcome/welcome.css')                       // 也可通过 url 加载样式表
+        this.template('/src/views/welcome/welcome.html')                    // 设置初始模板
+        .styles('/src/views/welcome/welcome.css')                           // 也可通过 url 加载样式表
         .mode('closed')                                                     // 影子DOM模式 (默认值 open)
         .inject(['event', 'cache', 'http', 'reactive'])                     // 依赖服务注入
     }
 
-    // 组件初始化
+    // 生命周期
     onCreated(){
         // 自己写的组件逻辑，可以在这里依次调用。（这个没有框架约定或限制了，自己随意发挥了）
-        this.hook();
+        // this.hook();
+        console.log("onCreated")
     }
 
     hook(){
@@ -29,7 +26,7 @@ export default class Welcome extends webcore.component.builder {
         const {event, cache, http, reactive} = this.services;               // 批量解构获取服务
 
         // 使用组件封装的 selector 方法获取组件内元素
-        const h1 = this.selector('h1')
+        const h1 = this.querySelector('h1')
 
         // 将元素变为响应式元素( reactive.element() 会把 DOM 元素变成响应式，修改 .value 会自动更新页面)
         const content = reactive.element(h1);
@@ -79,13 +76,30 @@ export default class Welcome extends webcore.component.builder {
         // api.delete().then();    //   await api.get()
     }
 
-    // 生命周期
-    // 组件挂载时
-    onConnected(){
-        console.log("Welcome 组件已经挂载到页面")
+    // 组件挂载前
+    onBeforeMount(){
+        console.log("onBeforeMount")
     }
 
-    // 属性值变化
+    // 组件连接时
+    onConnected(){
+        console.log("Welcome 组件已经插入到 DOM 树")
+    }
+
+
+    // 组件挂载后
+    onMounted(){
+        console.log("onMounted")
+    }
+
+    // 组件断开时
+    onDisconnected(){
+        console.log("Welcome 组件从页面中卸载");
+        // 组件卸载时要做的回收工作
+        this.services.event.delete('welcome');            // 删除向外暴露的方法
+    }
+
+    // 属性值的变化
     onAttributeChanged(attr, value, old){
         console.log(`组件属性监听：组件 'my-welcome' 的 ${attr} 属性值发生改变: ${old} -> ${value}`);
         if (attr === "content"){this.state.content.value = value;}                             // 监听到属性值变化，就可以改变内容了
@@ -95,18 +109,14 @@ export default class Welcome extends webcore.component.builder {
         console.log('组件被移动到新文档');
     }
 
-    // 组件卸载时
-    onDisconnected(){
-        console.log("Welcome 组件从页面中卸载");
-        // 组件卸载时要做的回收工作
-        this.services.event.delete('welcome');            // 删除向外暴露的方法
-    }
-
-    // 路由触发事件
+    // 路由前
     onBeforeRoute(route){
+        console.log("onBeforeRoute")
+        console.log(route)
         return true;
     }
 
+    // 路由后
     onRouted(route){
 
     }

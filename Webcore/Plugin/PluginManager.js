@@ -24,7 +24,7 @@ export default class PluginManager {
             dependency: [],
             type: "plugin",
             installedAt: new Date()
-        },false);
+        });
         if (plugin.singleton === true){config.singleton = true}
         if (Array.isArray(plugin.dependency)){config.dependency = dependency}
         if (Object.isObject(options)){Object.assign(config, options)}

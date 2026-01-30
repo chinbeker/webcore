@@ -11,7 +11,7 @@ export default class EventProvider {
         name = String.toNotEmptyString(name, "Provider");
         if (Object.isObject(handlers)){
             EventProvider.events.delete(name);
-            EventProvider.events.set(name, Object.pure(handlers, false));
+            EventProvider.events.set(name, Object.pure(handlers));
             return true;
         }
         return false;

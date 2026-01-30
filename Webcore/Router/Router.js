@@ -24,6 +24,7 @@ export default class Router {
     constructor(mode, view, routes){
         Object.freezeProp(this, "views", new Map());
         Object.freezeProp(this, "mode", Router.check(mode));
+        Object.sealProp(this, "current", null);
         if (!(view instanceof RouterView)){
             throw new TypeError('Invalid "router-view" element.');
         }
@@ -95,6 +96,7 @@ export default class Router {
                 route.component = await ComponentService.instance.load(route.component)
             }
             const component = route.component;
+            component.routing = true;
             if (route.cache === true){
                 if (!this.views.has(route.path)){
                     this.views.set(route.path, new component())
@@ -104,14 +106,14 @@ export default class Router {
                 views.push(view);
             } else {
                 const view = new component();
-                view.position = Object.pure({left:0,top:0},false);
+                view.position = Object.pure({left:0,top:0});
                 views.push(view);
             }
+            component.routing = false;
         }
 
         const root = views[0];
         const target = views.pop();
-        await target.routeCallback(route.view);
 
         // 路由之前的回调
         if (typeof target.beforeRouteCallback === "function"){
@@ -173,6 +175,14 @@ export default class Router {
                 pathname = `${RouterService.instance.base}/#${pathname}`;
             }
         }
+        if (this.current && this.current.link instanceof HTMLAnchorElement){
+            this.current.link.classList.remove("active")
+        }
+        if (route.link instanceof HTMLAnchorElement){
+            route.link.classList.add("active");
+        }
+        this.current = route;
+
         if (route.replace){
             top.history.replaceState(route, "", pathname)
         } else {
@@ -208,7 +218,7 @@ export default class Router {
                 this.to({
                     to: location.hash.replace("#",""),
                     replace: true,
-                    params: Object.pure(Object.fromEntries(new URLSearchParams(location.hash.slice(index+1))),false)
+                    params: Object.pure(Object.fromEntries(new URLSearchParams(location.hash.slice(index+1))))
                 })
             } else {
                 this.replace(location.hash.replace("#",""))

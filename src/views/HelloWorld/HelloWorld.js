@@ -38,7 +38,7 @@ export default class HelloWorld extends webcore.component.builder {
     // 生命周期钩子
     onCreated(){
         const event = this.service('event');
-        const p = this.selector('p');
+        const p = this.querySelector('p');
 
         event.select(p).click(
             ()=>{p.textContent = "Webcore"}

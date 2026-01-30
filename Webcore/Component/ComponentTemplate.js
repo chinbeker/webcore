@@ -1,50 +1,55 @@
+import ComponentService from "./ComponentService.js";
+
 export default class ComponentTemplate {
-    #url = null;
-    #html = "<slot></slot>";
-    #initial = true;
-    #fragment = null;
 
-    get initial(){return this.#initial;}
-    get url(){return this.#url;}
-    get html(){return this.#html;}
-
-    set url(url){
-        if (this.#initial){
-            this.#url = URL.create(url);
-            this.#initial = false;
-        }
+    constructor(){
+        this.innerHTML = "<slot></slot>";
+        this.url = null;
+        this.created = false;
+        this.fragment = null;
     }
 
     set html(value){
-        if (this.#initial){
-            this.#html = ComponentTemplate.compress(value);
-            this.#initial = false;
+        if (!this.created){
+            Error.throwIfNotString(value, "Component template");
+            value = ComponentTemplate.compress(value);
+            if (!String.isNullOrWhiteSpace(value) && !value.includes("<") && !value.includes(">")){
+                try {
+                    this.url = new URL(value, ComponentService.instance.base);
+                } catch  {
+                    this.innerHTML = value;
+                }
+            } else {
+                this.innerHTML = value;
+            }
+            this.created = true;
         }
     }
 
-    async fragment(){
-        if (this.#fragment === null){
-            if (this.#url !== null){
+    async getFragment(){
+        if (this.fragment === null){
+            if (this.url !== null){
                 try {
-                    const template = await URL.loader(this.#url);
-                    this.#html = ComponentTemplate.compress(template);
+                    const template = await URL.loader(this.url);
+                    this.innerHTML = ComponentTemplate.compress(template);
                 } catch {
                     throw new TypeError("Component template loading failed.");
                 }
             }
 
-            if (String.isNullOrWhiteSpace(this.#html)){
-                this.#fragment = document.createDocumentFragment();
-                const root = document.createElement("div");
-                root.classList.add("root");
-                this.#fragment.append(root);
+            if (String.isNullOrWhiteSpace(this.innerHTML)){
+                this.fragment = document.createDocumentFragment()
             } else {
-                const fragment = document.createRange().createContextualFragment(this.#html);
+                const fragment = document.createRange().createContextualFragment(this.innerHTML);
+                // html 安全处理
                 fragment.querySelectorAll('script').forEach(script => script.remove());
-                this.#fragment = fragment;
+                fragment.querySelectorAll('[onerror]').forEach(el => el.removeAttribute("onerror"));
+                this.fragment = fragment;
             }
+            this.fragment.firstElementChild?.classList.add("root");
         }
-        return this.#fragment.cloneNode(true);
+        this.created = true;
+        return this.fragment.cloneNode(true);
     }
 
     static compress(html){return html.replace(/\n\s*/g, "").replace(/>\s+</g, "><").trim()}

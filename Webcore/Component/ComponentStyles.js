@@ -1,47 +1,48 @@
+import ComponentService from "./ComponentService.js";
+
 export default class ComponentStyles {
-    #url = null;
-    #style = null;
-    #initial = true;
-    #styleSheet = null;
 
-    get initial(){return this.#initial;}
-    get url(){return this.#url;}
-    get style(){return this.#style;}
-
-    set url(url){
-        if (this.#initial){
-            this.#url = URL.create(url);;
-            this.#initial = false;
-        }
+    constructor(){
+        this.created = false;
+        this.styles = [];
+        this.styleSheet = null;
     }
+
+    get has(){return this.styles.length > 0;}
 
     set style(value){
-        if (this.#initial){
-            this.#style = ComponentStyles.compress(value);
-            this.#initial = false;
+        if (!this.created){
+            Error.throwIfNotString(value, "Component style");
+            this.styles.push(ComponentStyles.compress(value));
         }
     }
 
-    async styleSheet(){
-        if (this.#styleSheet === null){
-            if (this.#url !== null){
+    async getStyleSheet(){
+        if (this.styleSheet === null){
+            const sheet = new CSSStyleSheet();
+
+            if (this.styles.length > 0){
                 try {
-                    const style = await URL.loader(this.#url);
-                    this.#style = ComponentStyles.compress(style);
+                    for (let i = 0;i < this.styles.length;i ++){
+                        const item = this.styles[i];
+                        if (item.endsWith(".css") || (!item.includes("{") && !item.includes("}"))){
+                            this.styles[i] = ComponentStyles.compress(
+                                await URL.loader(new URL(item, ComponentService.instance.base))
+                            );
+                        }
+                    }
+                    sheet.replaceSync([...ComponentStyles.base, ...this.styles].join(""));
                 } catch  {
                     throw new TypeError("Component style loading failed.");
                 }
+            } else {
+                heet.replaceSync(ComponentStyles.base.join(""))
             }
 
-            if (String.isNullOrWhiteSpace(this.#style)){
-                this.#styleSheet = [...ComponentStyles.base];
-            } else {
-                const sheet = new CSSStyleSheet();
-                sheet.replaceSync(this.#style);
-                this.#styleSheet = [...ComponentStyles.base, sheet];
-            }
+            this.styleSheet = [sheet];
+            this.created = true;
         }
-        return this.#styleSheet;
+        return this.styleSheet;
     }
 
     static compress(style){
