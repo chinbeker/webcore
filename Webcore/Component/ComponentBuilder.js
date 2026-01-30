@@ -163,6 +163,7 @@ export default class ComponentBuilder extends HTMLElement {
     // 私有方法
     async #initialize(){
         this.#shadow = this.attachShadow({ mode: this.#mode });
+        this.#builder.styles.created = true;
         this.#created = true;
 
         // 加载样式

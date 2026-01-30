@@ -22,7 +22,6 @@ customElements.define('router-view', RouterView);
 export default class Router {
 
     constructor(mode, view, routes){
-        Object.freezeProp(this, "views", new Map());
         Object.freezeProp(this, "mode", Router.check(mode));
         Object.sealProp(this, "current", null);
         if (!(view instanceof RouterView)){
@@ -69,8 +68,8 @@ export default class Router {
 
         // 保存跳转前的滚动位置
         for (const route of routes){
-            if (this.views.has(route.path)){
-                const view = this.views.get(route.path);
+            if (Router.cache.has(route.path)){
+                const view = Router.cache.get(route.path);
                 if (view.parentElement){
                     route.component.position.left = view.parentElement.scrollLeft;
                     route.component.position.top = view.parentElement.scrollTop;
@@ -97,11 +96,12 @@ export default class Router {
             }
             const component = route.component;
             component.routing = true;
-            if (route.cache === true){
-                if (!this.views.has(route.path)){
-                    this.views.set(route.path, new component())
+
+            if (route.cache === true || (typeof route.cache === "number" && route.cache > 0)){
+                if (!Router.cache.has(route.path)){
+                    Router.cache.set(route.path, new component(), {absolute: route.cache === true ? 0 : route.cache})
                 }
-                const view = this.views.get(route.path);
+                const view = Router.cache.get(route.path);
                 view.position = component.position;
                 views.push(view);
             } else {

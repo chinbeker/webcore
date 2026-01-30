@@ -35,6 +35,7 @@ export default class CacheEntry {
     }
 
     get key(){return this.#key;}
+
     get value(){
         const now = Date.now();
         if (this.#options.sliding > 0){this.#expire = now + this.#options.sliding * 1000;}
@@ -43,7 +44,10 @@ export default class CacheEntry {
     }
     get handler(){const handler = this.#handler;this.#handler = null;return handler;}
     get expired(){
-        if (this.#expire > 0 && Date.now() > this.#expire){this.#value = null;return true;}
+        if (this.#expire > 0 && Date.now() > this.#expire){
+            this.#value = null;
+            return true;
+        }
         return false;
     }
 }

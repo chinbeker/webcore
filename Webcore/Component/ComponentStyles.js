@@ -52,6 +52,7 @@ export default class ComponentStyles {
         .replace(/\s*:\s*/g, ":")
         .replace(/\s*;\s*/g, ";")
         .replace(/;\s*}/g, "}")
+        .replace(/\/\*[\s\S]*?\*\//g, "")
         .trim();
     }
 }

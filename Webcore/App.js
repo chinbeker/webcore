@@ -1,10 +1,10 @@
 import Application from "./Application/Application.js";
 import InitialService from "./Initial/InitialService.js";
+import CacheService from "./Cache/CacheService.js";
 import RouterService from "./Router/RouterService.js";
 import GlobalService from "./Global/GlobalService.js";
 import LayoutService from "./Layout/LayoutService.js";
 import EventService from "./Event/EventService.js";
-import CacheService from "./Cache/CacheService.js";
 import HttpService from "./Http/HttpService.js";
 import StateService from "./State/StateService.js";
 import ReactiveService from "./Reactive/ReactiveService.js";
@@ -20,11 +20,11 @@ const builder = Application.createBuilder();
 console.log("3. 为应用程序注册服务");
 const services = [
     {name: "initial", service: InitialService, singleton: true, global: true},
-    {name: "router", service: RouterService, singleton: true, global: true},
+    {name: "cache", service: CacheService, singleton: false, global: true},
+    {name: "router", service: RouterService, singleton: true, global: true, dependency: ["cache"]},
     {name: "layout", service: LayoutService, singleton: true, global: true},
     {name: "global", service: GlobalService, singleton: true, global: true},
     {name: "event", service: EventService, singleton: true, global: true},
-    {name: "cache", service: CacheService, singleton: false, global: true},
     {name: "http", service: HttpService, singleton: true, global: true, dependency: ["cache"]},
     {name: "state", service: StateService, singleton: true, global: true},
     {name: "reactive", service: ReactiveService, singleton: true, global: true},

@@ -52,5 +52,10 @@ export default class ComponentTemplate {
         return this.fragment.cloneNode(true);
     }
 
-    static compress(html){return html.replace(/\n\s*/g, "").replace(/>\s+</g, "><").trim()}
+    static compress(html){
+        return html.replace(/\n\s*/g, "")
+        .replace(/>\s+</g, "><")
+        .replace(/<!--[\s\S]*?-->/g, "")
+        .trim();
+    }
 }

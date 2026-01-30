@@ -8,9 +8,9 @@ export default class RouterService {
     static system = true;
     static serviceName = "router";
 
-    constructor(){
+    constructor(cache){
         if (RouterService.instance){return RouterService.instance;}
-
+        if (cache){Object.freezeProp(Router, "cache", cache)}
         Object.sealProp(RouterService, "beforeEach", null);
         Object.sealProp(RouterService, "afterEach", null);
 
