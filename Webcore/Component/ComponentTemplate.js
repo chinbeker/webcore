@@ -46,16 +46,12 @@ export default class ComponentTemplate {
                 fragment.querySelectorAll('[onerror]').forEach(el => el.removeAttribute("onerror"));
                 this.fragment = fragment;
             }
-            this.fragment.firstElementChild?.classList.add("root");
         }
         this.created = true;
         return this.fragment.cloneNode(true);
     }
 
     static compress(html){
-        return html.replace(/\n\s*/g, "")
-        .replace(/>\s+</g, "><")
-        .replace(/<!--[\s\S]*?-->/g, "")
-        .trim();
+        return html.replace(/<!--[\s\S]*?-->/g, "").trim();
     }
 }

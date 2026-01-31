@@ -10,10 +10,11 @@ export default class RouterService {
 
     constructor(cache){
         if (RouterService.instance){return RouterService.instance;}
+
+        // 路由系统
         if (cache){Object.freezeProp(Router, "cache", cache)}
         Object.sealProp(RouterService, "beforeEach", null);
         Object.sealProp(RouterService, "afterEach", null);
-
         Object.freezeProp(Object.getPrototypeOf(Application.instance), "useRouter", function useRouter(router){
             RouterService.instance.use(router)
         });

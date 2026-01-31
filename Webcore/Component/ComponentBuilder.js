@@ -174,6 +174,8 @@ export default class ComponentBuilder extends HTMLElement {
 
         // 加载 HTML
         this.#root = await this.#builder.template.getFragment();
+        this.#shadow.append(document.createElement("div"));
+        this.#shadow.firstElementChild.classList.add("root");
 
         // 解析服务
         if (this.#inject.length > 0){
@@ -197,10 +199,9 @@ export default class ComponentBuilder extends HTMLElement {
         this.#render = true;
         this.#loader = null;
 
-        const element = root.querySelector(".root");
-        if (element) {this.#root = element} else {this.#root = root.firstElementChild;}
+        this.#root = this.#shadow.firstElementChild;
         Application?.instance?.router?.bind(root);
-        this.#shadow.appendChild(root);
+        this.#root.replaceChildren(root);
 
         // 首次挂载后钩子
         if (typeof this.onMounted === "function"){this.onMounted();}

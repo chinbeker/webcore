@@ -21,6 +21,7 @@ console.log("3. 为应用程序注册服务");
 const services = [
     {name: "initial", service: InitialService, singleton: true, global: true},
     {name: "cache", service: CacheService, singleton: false, global: true},
+    // {name: "router", service: RouterService, singleton: true, global: true},
     {name: "router", service: RouterService, singleton: true, global: true, dependency: ["cache"]},
     {name: "layout", service: LayoutService, singleton: true, global: true},
     {name: "global", service: GlobalService, singleton: true, global: true},

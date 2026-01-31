@@ -7,9 +7,7 @@ export default class HelloWorld extends webcore.component.builder {
     // 创建组件
     create(){
         this.template(
-            `<div class="root">
-                <p> Hello World </p>
-            </div>`
+            `<p> Hello World </p>`
         )
         .styles(
             `.root {
