@@ -19,6 +19,9 @@ export default class PluginManager {
         }
         let name = plugin.name || options.name;
         name = String.toNotEmptyString(name, "Plugin name");
+        if (PluginManager.plugins.has(name)){
+            throw new TypeError("The plugin has already been installed.")
+        }
         PluginManager.plugins.set(name, Object.pure(plugin));
         if (typeof plugin.install === "function" && plugin.installed !== true) {
             plugin.install(Application.instance, options);
