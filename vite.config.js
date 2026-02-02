@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   build: {
+    // minify: false,
     minify: 'terser',
     sourcemap: false,
 
@@ -9,7 +10,8 @@ export default defineConfig({
       input: '/src/main.js',
       output: {
         name: 'WebCore',
-        entryFileNames: 'webcore.js',
+        entryFileNames: 'webcore.all.js',
+        // format: 'es',
         format: 'iife',
         compact: true,
       }
